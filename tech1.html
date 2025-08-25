@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الاختبارات الإلكتروني - تكنولوجيا</title>
+    <style>
+        :root {
+            --primary-color: #3d6e6a; /* أخضر غامق بارد */
+            --secondary-color: #455A64; /* رمادي مزرق */
+            --light-color: #CFD8DC; /* رمادي فاتح */
+            --dark-color: #263238; /* أسود رمادي */
+            --correct-color: #4CAF50; /* أخضر للإجابات الصحيحة */
+            --wrong-color: #F44336; /* أحمر للإجابات الخاطئة */
+        }
+            
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .timer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            display: inline-block;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+        
+        .units-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .unit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .unit-btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quiz-section {
+            display: none;
+        }
+        
+        .quiz-section.active {
+            display: block;
+        }
+        
+        .question-part {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .question-part.active {
+            display: block;
+        }
+        
+        .question {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .question h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .option {
+            background-color: white;
+            border: 1px solid var(--light-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: var(--secondary-color);
+        }
+        
+        .option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .navigation-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-btn:disabled {
+            background-color: var(--light-color);
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        .submit-btn:hover {
+            background-color: #1B5E20;
+        }
+        
+        .results {
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .results h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-color);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .user-answer.correct {
+            color: var(--correct-color);
+        }
+        
+        .user-answer.wrong {
+            color: var(--wrong-color);
+        }
+        
+        .correct-answer {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+        
+        .time-taken {
+            text-align: center;
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .print-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .print-btn:hover {
+            background-color: #37474F;
+        }
+        
+        
+        /* أنماط قسم الإحصائيات العامة */
+        /* أنماط المخطط البياني */
+.overall-results {
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.overall-results-chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 200px; /* ارتفاع أدنى */
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .overall-results-chart-container {
+        min-height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .overall-results {
+        padding: 10px;
+    }
+    .overall-results-chart-container {
+        min-height: 150px;
+    }
+}
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .unit-btn, .timer, .nav-btn, .submit-btn, .print-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 50px;" id="subject-name">نظام الاختبارات الإلكتروني | التكنولوجيا</h1>
+        
+        <!-- قسم الإحصائيات العامة -->
+        <div class="overall-results" id="overall-results">
+            <h3>معدل جميع الاختبارات</h3>
+            <canvas id="overallResultsChart" style="max-width: 400px; margin: 0 auto;"></canvas>
+            <div id="overallResultsDetails" class="overall-stats"></div>
+        </div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="units-list" id="units-list">
+            <!-- سيتم ملء هذا القسم بالوحدات عبر JavaScript -->
+        </div>
+        
+        <div class="quiz-section" id="quiz-section">
+            <div class="question-part active" data-part="1">
+                <!-- سيتم ملء الأسئلة عبر JavaScript -->
+            </div>
+            
+            <div class="navigation-btns">
+                <button class="nav-btn" id="prev-btn" disabled>السابق</button>
+                <button class="nav-btn" id="next-btn">التالي</button>
+            </div>
+            
+            <button class="submit-btn" id="submit-btn">تسليم الإجابات</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>نتيجة الاختبار</h2>
+            <div class="score-display" id="score-display"></div>
+            <div class="time-taken" id="time-taken"></div>
+            <div id="results-content">
+                <!-- سيتم ملء النتائج هنا -->
+            </div>
+            <button class="print-btn" id="print-btn">تصدير النتيجة كملف PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة الرسم البياني للإحصائيات العامة
+            const overallChartCtx = document.getElementById('overallResultsChart').getContext('2d');
+            let overallChart = new Chart(overallChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['إجابات صحيحة', 'إجابات خاطئة'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#4CAF50', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // تحديث الإحصائيات العامة
+            function updateOverallResults() {
+                const allResults = JSON.parse(localStorage.getItem('quiz_results_techSc')) || [];
+                let totalCorrect = 0;
+                let totalQuestions = 0;
+
+                allResults.forEach(r => {
+                    totalCorrect += r.score;
+                    totalQuestions += r.total;
+                });
+
+                const overallPercentage = totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+                document.getElementById('overallResultsDetails').textContent = 
+                    `عدد الاختبارات: ${allResults.length} | المعدل العام: ${overallPercentage}%`;
+                
+                overallChart.data.datasets[0].data = [totalCorrect, totalQuestions - totalCorrect];
+                overallChart.update();
+            }
+
+            // تحديث الإحصائيات عند تحميل الصفحة
+            updateOverallResults();
+
+            // بيانات الاختبار
+            const subjectName = "تكنولوجيا - أدبي";
+            const units = [
+                { id: 1, name: "الوحدة الأولى- الدرس الأول" },
+                { id: 2, name: "الوحدة الأولى - الدرس الثاني" },
+                { id: 3, name: "الوحدة الثانية- الدرس الأول" },
+                { id: 4, name: "الوحدة الثانية- الدرس الثاني & الثالث" },
+                { id: 5, name: "اختبار شامل 1" },
+            ];
+            
+            const quizzes = {
+                1: [
+                    {
+                        id: 1,
+                        question: "يتكون نظام (نموذج) OSI من ___ طبقات",
+                        options: ["5", "7", "9", "6"],
+                        answer: "7"
+                    },
+                    {
+                        id: 2,
+                        question: "تشكل البنية التحتية التي تنقل عليها الإشارات السلكية واللاسلكية هي الطبقة",
+                        options: ["الأولى", "الثانية", "الثالثة", "الرابعة"],
+                        answer: "الأولى"
+                    },
+                    {
+                        id: 3,
+                        question: "الطبقة المسؤولة عن تنظيم عملية الارسال عبر الوسائط المشتركة بين الأجهزة",
+                        options: ["الشبكة", "الفيزيائية", "ربط البيانات", "النقل"],
+                        answer: "ربط البيانات"
+                    },
+                    {
+                        id: 4,
+                        question: "الطبقة الرابعة في نموذج OSI هي طبقة",
+                        options: ["النقل", "الجلسة", "التقديم", "التطبيقات"],
+                        answer: "النقل"
+                    },
+                    {
+                        id: 5,
+                        question: "الطبقة الخامسة في نموذج OSI هي طبقة",
+                        options: ["النقل", "الجلسة", "التقديم", "التطبيقات"],
+                        answer: "الجلسة"
+                    },
+                    {
+                        id: 6,
+                        question: "الطبقة السادسة في نموذج OSI هي طبقة",
+                        options: ["النقل", "الجلسة", "التقديم", "التطبيقات"],
+                        answer: "التقديم"
+                    },
+                    {
+                        id: 7,
+                        question: "الطبقة السابعة في نموذج OSI هي طبقة",
+                        options: ["النقل", "الجلسة", "التقديم", "التطبيقات"],
+                        answer: "التطبيقات"
+                    },
+                    {
+                        id: 8,
+                        question: "من الأجهزة المستخدمة في طبقة ربط البيانات",
+                        options: ["محول الشبكة", "الموجه", "بطاقة واجهة الشبكة", "أ , ج معاً"],
+                        answer: "أ , ج معاً"
+                    },
+                    {
+                        id: 9,
+                        question: "الجهاز الذي يستخدم لربط عدة أجهزة في شبكة محلية مثل المؤسسات",
+                        options: ["المعيد", "محول الشبكة", "الموجه", "جهاز نقطة الوصول"],
+                        answer: "محول الشبكة"
+                    },
+                    {
+                        id: 10,
+                        question: "أداة تربط الجهاز بالوسيط",
+                        options: ["المعيد", "محول الشبكة", "بطاقة واجهة الشبكة", "ليس مما ذكر"],
+                        answer: "بطاقة واجهة الشبكة"
+                    },
+                    {
+                        id: 11,
+                        question: "نظام العنونة في طبقة ربط البيانات",
+                        options: ["MAC ADRESS", "IP ADRESS", "PORT ADRESS", "جميع ما سبق"],
+                        answer: "MAC ADRESS"
+                    },
+                    {
+                        id: 12,
+                        question: "يسمى تنسيق الرسالة في طبقة ربط البيانات",
+                        options: ["حزمة", "قطعة", "بت", "إطار"],
+                        answer: "إطار"
+                    },
+                    {
+                        id: 13,
+                        question: "عدد خانات العنوان الفيزيائي ___ بت",
+                        options: ["16", "12", "48", "32"],
+                        answer: "48"
+                    },
+                    {
+                        id: 14,
+                        question: "عدد عناوين العنوان الفيزيائي MAC",
+                        options: ["2^8", "2^16", "2^32", "2^48"],
+                        answer: "2^48"
+                    },
+                    {
+                        id: 15,
+                        question: "الجهاز المسؤول عن تنظيم عملية مرور البيانات بين الأجهزة",
+                        options: ["الموجه", "المعيد", "محول الشبكة", "جهاز نقطة الوصول"],
+                        answer: "محول الشبكة"
+                    },
+                    {
+                        id: 16,
+                        question: "يستخدم المحول لتوصيل الأجهزة في شبكته المحلية المخطط",
+                        options: ["المدرج", "النجمي", "النقطي", "المركزي"],
+                        answer: "النجمي"
+                    },
+                    {
+                        id: 17,
+                        question: "الحقل المسؤول عن تفحص الأخطاء في نهاية الإطار",
+                        options: ["DHCP", "FSC", "FCS", "DNS"],
+                        answer: "FCS"
+                    },
+                    {
+                        id: 18,
+                        question: "اذا كان الاطار غير صالح يقوم حقل تفحص الأخطاء بــ",
+                        options: ["التخلص منه", "إعادة ارساله", "إيقاف الفحص", "تشويش البيانات"],
+                        answer: "التخلص منه"
+                    },
+                    {
+                        id: 19,
+                        question: "أي من التالي لا يصلح لأن يكون عنوان MAC",
+                        options: ["A2-C5-F4-19-8C-FF", "H53C68.BA12D6", "A2:5C:F4:19:8C:FF", "1111:a100:b1c2"],
+                        answer: "H53C68.BA12D6"
+                    },
+                    {
+                        id: 20,
+                        question: "جميع ما يلي لا يصلح أن يكون عنوان MAC ما عدا",
+                        options: ["AABB62.12345F", "6B,3A,F5,96,81,13", "2311:A5K3:2231", "C:5B:D:F2:12:A4"],
+                        answer: "AABB62.12345F"
+                    },
+                    {
+                        id: 21,
+                        question: "المسؤول عن اتخاذ القرار المناسب لإرسال الرسالة للمنفذ الصحيح",
+                        options: ["المحول", "المعيد", "الموجه", "ليس مما سبق"],
+                        answer: "المحول"
+                    },
+                    {
+                        id: 22,
+                        question: "يمثل العنوان الفيزيائي بالنظام",
+                        options: ["العشري", "الثنائي", "الثماني", "السادس عشر"],
+                        answer: "السادس عشر"
+                    },
+                    {
+                        id: 23,
+                        question: "الخطوات الصحيحة لمعرفة عنوان MAC على أجهزة الأندرويد",
+                        options: [
+                            "اعدادات-الحالة-حول الهاتف-يظهر MAC",
+                            "الحالة-اعدادات-حول الجهاز-يظهر MAC",
+                            "اعدادات-حول الهاتف-الحالة-يظهر MAC",
+                            "حول الجهاز-الحالة-اعدادات-يظهر MAC"
+                        ],
+                        answer: "اعدادات-حول الهاتف-الحالة-يظهر MAC"
+                    },
+                    {
+                        id: 24,
+                        question: "يتكون الإطار من ___ أقسام",
+                        options: ["3", "4", "5", "6"],
+                        answer: "4"
+                    },
+                    {
+                        id: 25,
+                        question: "يقع حقل_____ في ذيل الإطار",
+                        options: ["عنوان المصدر", "عنوان الهدف", "جسم الرسالة", "تفحص الأخطاء"],
+                        answer: "تفحص الأخطاء"
+                    }
+                ],
+                2:[
+{
+"id": 1,
+"question": "تقع طبقة الشبكة في نموذج OSI في الطبقة",
+"options": ["الأولى", "الثانية", "الثالثة", "الرابعة"],
+"answer": "الثالثة"
+},
+{
+"id": 2,
+"question": "الطبقة المسؤولة عن توجيه الرسالة وصولاً للهدف عبر الموجهات:",
+"options": ["الأولى", "الثالثة", "الرابعة", "الثانية"],
+"answer": "الثالثة"
+},
+{
+"id": 3,
+"question": "الجهاز المستخدم في طبقة الشبكة:",
+"options": ["Router", "Access Point", "NIC", "LAN Switch"],
+"answer": "Router"
+},
+{
+"id": 4,
+"question": "يسمى تنسيق الرسالة في طبقة الشبكة:",
+"options": ["حزمة", "اطار", "قطعة", "بت"],
+"answer": "حزمة"
+},
+{
+"id": 5,
+"question": "نظام العد في العنوان المنطقي IP:",
+"options": ["الثنائي", "العشري", "السادس عشر", "الرباعي"],
+"answer": "العشري"
+},
+{
+"id": 6,
+"question": "يتكون العنوان المنطقي من ___ خانة:",
+"options": ["16", "32", "48", "24"],
+"answer": "32"
+},
+{
+"id": 7,
+"question": "عدد عناوين IPV4:",
+"options": ["2^48", "2^24", "2^42", "2^32"],
+"answer": "2^32"
+},
+{
+"id": 8,
+"question": "عناوين تستخدم للتنقل بين الشبكات:",
+"options": ["Mac Adress", "Email Adress", "IP Adress", "Port Adress"],
+"answer": "IP Adress"
+},
+{
+"id": 9,
+"question": "المسؤول عن تحديد العنوان الخاص بالجهاز والعنوان الخاص بالشبكة:",
+"options": ["البوابة الافتراضية", "العنوان المنطقي", "قناع الشبكة", "الخادم المفضل"],
+"answer": "قناع الشبكة"
+},
+{
+"id": 10,
+"question": "المسؤول عن الخروج من الشبكة الداخلية والاتصال بشبكة الانترنت:",
+"options": ["البوابة الافتراضية", "العنوان المنطقي", "قناع الشبكة", "الخادم المفضل"],
+"answer": "البوابة الافتراضية"
+},
+{
+"id": 11,
+"question": "اذا كان عنوان IP=192.168.5.4 وقناع الشبكة 255.255.255.0 فإن عنوان الشبكة:",
+"options": ["4", "192.168.5", "192.168", "192"],
+"answer": "192.168.5"
+},
+{
+"id": 12,
+"question": "اذا كان عنوان IP=192.168.8.10 وقناع الشبكة 255.255.0.0 فإن عنوان الجهاز:",
+"options": ["168.8.10", "8.10", "10", "192.168"],
+"answer": "8.10"
+},
+{
+"id": 13,
+"question": "ما هو عدد عناوين القناع 255.255.255.0",
+"options": ["2^4", "2^6", "2^8", "2^10"],
+"answer": "2^8"
+},
+{
+"id": 14,
+"question": "ما هو عدد عناوين القناع 255.255.0.0",
+"options": ["2^8", "2^16", "2^18", "2^20"],
+"answer": "2^16"
+},
+{
+"id": 15,
+"question": "ما هو عدد عناوين القناع 255.0.0.0",
+"options": ["2^32", "2^48", "2^24", "2^128"],
+"answer": "2^24"
+},
+{
+"id": 16,
+"question": "ما هو عدد عناوين IPV6:",
+"options": ["2^128", "2^32", "2^48", "2^64"],
+"answer": "2^128"
+},
+{
+"id": 17,
+"question": "اذا اردنا ربط 203 أجهزة على شبكة فإن القناع الأنسب هو:",
+"options": ["255.0.255.0", "255.0.0.0", "255.255.0.0", "255.255.255.0"],
+"answer": "255.255.255.0"
+},
+{
+"id": 18,
+"question": "اذا اردنا ربط 313 أجهزة على شبكة فإن القناع الأنسب هو:",
+"options": ["255.0.255.0", "255.0.0.0", "255.255.0.0", "255.255.255.0"],
+"answer": "255.255.0.0"
+},
+{
+"id": 19,
+"question": "ما الأمر المسؤول عن معرفة وتحديد عنوان IP على جهازك:",
+"options": ["Ping", "Tracert", "DHCP", "IP config"],
+"answer": "IP config"
+},
+{
+"id": 20,
+"question": "ما الأمر الذي يقوم بفتح موجه سطر الأوامر:",
+"options": ["cmd", "Ping", "DNS", "DHCP"],
+"answer": "cmd"
+},
+{
+"id": 21,
+"question": "يقوم بإعطاء عناوين IP تلقائية:",
+"options": ["DHCP", "Ping", "DNS", "cmd"],
+"answer": "DHCP"
+},
+{
+"id": 22,
+"question": "يقوم بتتبع مسار الرسالة من المصدر إلى الهدف:",
+"options": ["DHCP", "DNS", "Ping", "Tracert"],
+"answer": "Tracert"
+},
+{
+"id": 23,
+"question": "الأمر المسؤول عن فحص الاتصال مع عنوان IP:",
+"options": ["DHCP", "Ping", "FCS", "cmd"],
+"answer": "Ping"
+},
+{
+"id": 24,
+"question": "نستخدم الطريقة اليدوية لتكوين عنوان IP لكل ما سبق ما عدا:",
+"options": ["ماكينة التصوير", "التصفح", "الطابعة", "الماسح الضوئي"],
+"answer": "التصفح"
+},
+{
+"id": 25,
+"question": "يقوم بتحويل العنوان المدخل من عنوان نصي الى عنوان رقمي:",
+"options": ["DHCP", "DNS", "Ping", "FCS"],
+"answer": "DNS"
+}
+],
+
+3:[
+    {
+        "id": 1,
+        "question": "أكثر المواقع الالكترونية شيوعاً واستخداماً:",
+        "options": ["المواق الساكنة", "المواقع التفاعلية", "مواقع الانترنت", "مواقع التواصل الاجتماعي"],
+        "answer": "مواقع الانترنت"
+    },
+    {
+        "id": 2,
+        "question": "أول موقع الكتروني أُطلق في بداية ___:",
+        "options": ["السبعينات", "الثمانينات", "التسعينات", "الخمسينات"],
+        "answer": "التسعينات"
+    },
+    {
+        "id": 3,
+        "question": "اسم اول موقع الكتروني:",
+        "options": ["Google", "Class.mates", "Info.cern.ch", "Facebook"],
+        "answer": "Info.cern.ch"
+    },
+    {
+        "id": 4,
+        "question": "الأجهزة المستخدمة للوصول الى مواقع الشبكة:",
+        "options": ["الزبائن", "الخوادم", "المزود للانترنت", "وسائل الاتصال السلكية واللاسلكية"],
+        "answer": "الزبائن"
+    },
+    {
+        "id": 5,
+        "question": "الأجهزة التي تقوم بتوفير الخدمات المحتلفة مثل تنزيل وتحميل الملفات:",
+        "options": ["الزبائن", "الخوادم", "المزود للانترنت", "وسائل الاتصال السلكية واللاسلكية"],
+        "answer": "الخوادم"
+    },
+    {
+        "id": 6,
+        "question": "تعتبر العمود الفقاري لهيكلية شبكة الانترنت:",
+        "options": ["الزبائن", "الخوادم", "المزود للانترنت", "وسائل الاتصال السلكية واللاسلكية"],
+        "answer": "وسائل الاتصال السلكية واللاسلكية"
+    },
+    {
+        "id": 7,
+        "question": "أي من التالي يٌعد إحدى لغات برمجة المواقع الالكترونية:",
+        "options": ["PHP", "ASP.net", "HTML", "جميع ما سبق"],
+        "answer": "جميع ما سبق"
+    },
+    {
+        "id": 8,
+        "question": "أي من التالي يعد من البرمجيات المستخدمة في برمجة المواقع الالكترونية:",
+        "options": ["Dreamweaver", "Front Page", "HTML", "أ ، ب معاً"],
+        "answer": "أ ، ب معاً"
+    },
+    {
+        "id": 9,
+        "question": "تعد المواقع التي امتدادها com مواقع:",
+        "options": ["حكومية", "تجارية", "شبكات", "منظمات"],
+        "answer": "تجارية"
+    },
+    {
+        "id": 10,
+        "question": "تعد المواقع التي امتدادها edu مواقع:",
+        "options": ["حكومية", "شبكات", "تعليمية", "منظمات"],
+        "answer": "تعليمية"
+    },
+    {
+        "id": 11,
+        "question": "تعد المواقع التي امتدادها org مواقع:",
+        "options": ["حكومية", "شبكات", "تعليمية", "منظمات"],
+        "answer": "منظمات"
+    },
+    {
+        "id": 12,
+        "question": "تعد المواقع التي امتدادها gov مواقع:",
+        "options": ["حكومية", "شبكات", "تجارية", "منظمات"],
+        "answer": "حكومية"
+    },
+    {
+        "id": 13,
+        "question": "المواقع التي امتدادها net تعد مواقع:",
+        "options": ["شبكات", "تجارية", "منظمات", "حكومية"],
+        "answer": "شبكات"
+    },
+    {
+        "id": 14,
+        "question": "المواقع الحكومية امتدادها:",
+        "options": ["org", "edu", "gov", "net"],
+        "answer": "gov"
+    },
+    {
+        "id": 15,
+        "question": "يعتبر المجال في الموقع www.google.com.ps هو:",
+        "options": ["Google.com", "Com.ps", "Google.com.ps", "Com"],
+        "answer": "Google.com.ps"
+    },
+    {
+        "id": 16,
+        "question": "مواقع ذات لغات برمجة بسيطة لا يمكن التعديل عليها الا من المصمم:",
+        "options": ["تفاعلية", "ساكنة", "تقليدية", "تواصل اجتماعي"],
+        "answer": "ساكنة"
+    },
+    {
+        "id": 17,
+        "question": "مواقع تمتاز بالتغير والاستمرار دون تدخل مسؤول الموقع:",
+        "options": ["تفاعلية", "ساكنة", "تقليدية", "تواصل اجتماعي"],
+        "answer": "تفاعلية"
+    },
+    {
+        "id": 18,
+        "question": "من المواقع الساكنة، المواقع:",
+        "options": ["الشخصية", "التعريفية", "أ ، ب معاً", "الصحفية"],
+        "answer": "أ ، ب معاً"
+    },
+    {
+        "id": 19,
+        "question": "من المواقع التفاعلية:",
+        "options": ["الشخصية", "التعريفية", "الألعاب", "الاجتماعية"],
+        "answer": "الاجتماعية"
+    },
+    {
+        "id": 20,
+        "question": "في الموقع www.google.com.ps ملحق الموقع هو:",
+        "options": ["Ps", "Com", "Com.ps", "Google.com"],
+        "answer": "Com.ps"
+    },
+    {
+        "id": 21,
+        "question": "يسمى ps في المواقع الالكترونية:",
+        "options": ["اسم الموقع", "الدولة التابع لها الموقع", "الملحق", "المجال"],
+        "answer": "الدولة التابع لها الموقع"
+    },
+    {
+        "id": 22,
+        "question": "البروتوكول المسؤول عن نفل الصفحة الرئيسية للموقع وعرض محتوياته للزبون:",
+        "options": ["HTML", "TCP", "HTTP", "DNS"],
+        "answer": "HTTP"
+    },
+    {
+        "id": 23,
+        "question": "البروتوكول الذي يحدث اتصال بين جهاز الخادم والمستخدم اذا كان العنوان صحيحاً:",
+        "options": ["HTML", "TCP", "HTTP", "DNS"],
+        "answer": "DNS"
+    },
+    {
+        "id": 24,
+        "question": "المواقع التعليمية امتدادها:",
+        "options": ["Org", "Edu", "Gov", "Net"],
+        "answer": "Edu"
+    },
+    {
+        "id": 25,
+        "question": "مواقع المنظمات امتدادها:",
+        "options": ["Org", "Edy", "Gov", "Net"],
+        "answer": "Org"
+    }
+],
+4:[
+    {
+        id: 1,
+        question: "أول موقع تواصل اجتماعي أطلق سنة/",
+        options: ["1990", "2005", "1995", "2004"],
+        answer: "1995"
+    },
+    {
+        id: 2,
+        question: "أنشأ موقع فيس بوك سنة/",
+        options: ["2004", "2005", "2006", "2003"],
+        answer: "2004"
+    },
+    {
+        id: 3,
+        question: "أنشأ موقع تويتر سنة:",
+        options: ["2002", "2004", "2005", "2006"],
+        answer: "2006"
+    },
+    {
+        id: 4,
+        question: "الشخص الذي أنشأ موقع فيس بوك هو:",
+        options: ["أيلون ماسك", "جراهام بيل", "مارك زوكربيرغ", "جاك دروسي"],
+        answer: "مارك زوكربيرغ"
+    },
+    {
+        id: 5,
+        question: "الشخص الذي أنشأ موقع تويتر هو:",
+        options: ["أيلون ماسك", "جراهام بيل", "مارك زوكربيرغ", "جاك دروسي"],
+        answer: "جاك دروسي"
+    },
+    {
+        id: 6,
+        question: "اسم أول موقع تواصل اجتماعي هو:",
+        options: ["Info.cdrn.ch", "Google", "Class.mates.com", "Facebook"],
+        answer: "Class.mates.com"
+    },
+    {
+        id: 7,
+        question: "أي من الآتي يعتبر مثال على مواقع التواصل الاجتماعي:",
+        options: ["فيس بوك", "تويتر", "لينكد ان", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    {
+        id: 8,
+        question: "أحد المواقع المختصة بنشر وتصفح الفيديوهات:",
+        options: ["يوتيوب", "لينكد ان", "فيس بوك", "تويتر"],
+        answer: "يوتيوب"
+    },
+    {
+        id: 9,
+        question: "أحد المواقع المختصة بعرض القدرات المهنية والوظيفية للأفراد:",
+        options: ["يوتيوب", "فيس بوك", "انستغرام", "لينكد ان"],
+        answer: "لينكد ان"
+    },
+    {
+        id: 10,
+        question: "الموقع الذي ينشر زواره أفكارهم بما يسمى تغريدات:",
+        options: ["فيس بوك", "يوتيوب", "لينكد ان", "تويتر"],
+        answer: "تويتر"
+    },
+    {
+        id: 11,
+        question: "جرائم تحدث عن طريق مواقع التواصل الاجتماعي مثل الابتزاز:",
+        options: ["القتل", "الجرائم الالكترونية", "الحرائق", "السرقات"],
+        answer: "الجرائم الالكترونية"
+    },
+    {
+        id: 12,
+        question: "صفحات متصلة مع بعضها البعض بوحدات تشعبية:",
+        options: ["المواقع الالكترونية", "مواقع التواصل", "إدارة المحتوى للنظام", "ليس مما سبق"],
+        answer: "المواقع الالكترونية"
+    },
+    {
+        id: 13,
+        question: "أي من الممارسات التالية من الاثار السلبية لمواقع التواصل الاجتماعي:",
+        options: ["الإدمان المفرط في استخدامها", "انتحال شخصية وهمية", "عدم موثوقية كل ما ينشر", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    {
+        id: 14,
+        question: "اسم يطلق على عالم الخيال وهو لتحقيق الإنجازات وتطوير الذات:",
+        options: ["العالم الافتراضي", "العالم الواقعي", "العالم الخيالي", "العالم البسيط"],
+        answer: "العالم الافتراضي"
+    },
+    {
+        id: 15,
+        question: "احدى المهن التالية هي مهن المستقبل في العالم الافتراضي:",
+        options: ["الطبخ", "القيادة", "الحدادة", "التسويق"],
+        answer: "التسويق"
+    },
+    {
+        id: 16,
+        question: "أي من التالي احدى المهن المستقبلية للعالم الافتراضي:",
+        options: ["تصميم الوسائط المتعددة", "تصميم المواقع الالكترونية", "الترجمة", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    {
+        id: 17,
+        question: "احدى المهارات التالية تتوافر في مهنة تصميم الوسائط المتعددة:",
+        options: ["معرفة في البرمجة", "معالجة الصوت والفيديو", "ادخال البيانات", "تصميم ألعاب ترفيهية"],
+        answer: "معالجة الصوت والفيديو"
+    },
+    {
+        id: 18,
+        question: "يجب على أحد أصحاب المهن التالية أن يتوافر بتقييم الإنتاج وأداء المنتج:",
+        options: ["مستشار الإنتاجية", "البرمجة", "ادخال البيانات", "التسويق الالكتروني"],
+        answer: "مستشار الإنتاجية"
+    },
+    {
+        id: 19,
+        question: "تقديم الخدمات الإخبارية والبرامج المتلفزة دور المجال:",
+        options: ["الاجتماعي", "التعليمي", "الإعلامي", "التجاري"],
+        answer: "الإعلامي"
+    },
+    {
+        id: 20,
+        question: "نشر الإعلانات الممولة وبيع البضائع على المواقع الالكترونية من دور المجال:",
+        options: ["التجاري", "الاجتماعي", "التعليمي", "الإعلامي"],
+        answer: "التجاري"
+    },
+    {
+        id: 21,
+        question: "تصميم الألعاب الترفيهية والتطبيقات التجارية من مهارات مهنة:",
+        options: ["تصميم المواقع الالكترونية", "البرمجة", "صيانة الحاسوب والشبكات", "التسويق"],
+        answer: "البرمجة"
+    },
+    {
+        id: 22,
+        question: "يجب على مزاولين مهنة صيانة الشبكات والحاسوب توافر مهارات مثل:",
+        options: ["صيانة الشبكات وحل مشكلاتها", "صيانة مشكلات الحاسوب المادية والبرمجية", "حماية البيانات في الشبكات من العبث والضياع", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    {
+        id: 23,
+        question: "يسمى الموقع الالكتروني ذات تصميم جيد عندما يتصف بــ:",
+        options: ["جاذبية عنوانه", "شمولية موضوعاته", "موضوعات حصرية وانسجام المحتوى واللون", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    {
+        id: 24,
+        question: "أي من التالية من الجرائم الالكترونية على منصات التواصل الاجتماعي:",
+        options: ["الابتزاز", "الاختراق", "التشهير", "جميع ما سبق"],
+        answer: "جميع ما سبق"
+    },
+    
+],
+5:[
+    {
+      "id": 1,
+      "question": "يتكون نظام (نموذج) OSI من ___ طبقات",
+      "options": ["5", "7", "9", "6"],
+      "answer": "7"
+    },
+    {
+      "id": 2,
+      "question": "الطبقة المسؤولة عن تنظيم عملية الارسال عبر الوسائط المشتركة بين الأجهزة",
+      "options": ["الشبكة", "الفيزيائية", "ربط البيانات", "النقل"],
+      "answer": "ربط البيانات"
+    },
+    {
+      "id": 3,
+      "question": "الجهاز المستخدم في طبقة الشبكة:",
+      "options": ["Router", "Access Point", "NIC", "LAN Switch"],
+      "answer": "Router"
+    },
+    {
+      "id": 4,
+      "question": "يتكون العنوان المنطقي من ___ خانة:",
+      "options": ["16", "32", "48", "24"],
+      "answer": "32"
+    },
+    {
+      "id": 5,
+      "question": "أكثر المواقع الالكترونية شيوعاً واستخداماً:",
+      "options": ["المواق الساكنة", "المواقع التفاعلية", "مواقع الانترنت", "مواقع التواصل الاجتماعي"],
+      "answer": "مواقع الانترنت"
+    },
+    {
+      "id": 6,
+      "question": "اسم اول موقع الكتروني:",
+      "options": ["Google", "Class.mates", "Info.cern.ch", "Facebook"],
+      "answer": "Info.cern.ch"
+    },
+    {
+      "id": 7,
+      "question": "أول موقع تواصل اجتماعي أطلق سنة/",
+      "options": ["1990", "2005", "1995", "2004"],
+      "answer": "1995"
+    },
+    {
+      "id": 8,
+      "question": "أنشأ موقع فيس بوك سنة/",
+      "options": ["2004", "2005", "2006", "2003"],
+      "answer": "2004"
+    },
+    {
+      "id": 9,
+      "question": "الشخص الذي أنشأ موقع فيس بوك هو:",
+      "options": ["أيلون ماسك", "جراهام بيل", "مارك زوكربيرغ", "جاك دروسي"],
+      "answer": "مارك زوكربيرغ"
+    },
+    {
+      "id": 10,
+      "question": "أحد المواقع المختصة بنشر وتصفح الفيديوهات:",
+      "options": ["يوتيوب", "لينكد ان", "فيس بوك", "تويتر"],
+      "answer": "يوتيوب"
+    },
+    {
+      "id": 11,
+      "question": "الطبقة الرابعة في نموذج OSI هي طبقة",
+      "options": ["النقل", "الجلسة", "التقديم", "التطبيقات"],
+      "answer": "النقل"
+    },
+    {
+      "id": 12,
+      "question": "عدد عناوين IPV4:",
+      "options": ["2^48", "2^24", "2^42", "2^32"],
+      "answer": "2^32"
+    },
+    {
+      "id": 13,
+      "question": "الأجهزة المستخدمة للوصول الى مواقع الشبكة:",
+      "options": ["الزبائن", "الخوادم", "المزود للانترنت", "وسائل الاتصال السلكية واللاسلكية"],
+      "answer": "الزبائن"
+    },
+    {
+      "id": 14,
+      "question": "أي من الآتي يعتبر مثال على مواقع التواصل الاجتماعي:",
+      "options": ["فيس بوك", "تويتر", "لينكد ان", "جميع ما سبق"],
+      "answer": "جميع ما سبق"
+    },
+    {
+      "id": 15,
+      "question": "الجهاز الذي يستخدم لربط عدة أجهزة في شبكة محلية مثل المؤسسات",
+      "options": ["المعيد", "محول الشبكة", "الموجه", "جهاز نقطة الوصول"],
+      "answer": "محول الشبكة"
+    },
+    {
+      "id": 16,
+      "question": "اذا كان عنوان IP=192.168.5.4 وقناع الشبكة 255.255.255.0 فإن عنوان الشبكة:",
+      "options": ["4", "192.168.5", "192.168", "192"],
+      "answer": "192.168.5"
+    },
+    {
+      "id": 17,
+      "question": "تعد المواقع التي امتدادها com مواقع:",
+      "options": ["حكومية", "تجارية", "شبكات", "منظمات"],
+      "answer": "تجارية"
+    },
+    {
+      "id": 18,
+      "question": "الموقع الذي ينشر زواره أفكارهم بما يسمى تغريدات:",
+      "options": ["فيس بوك", "يوتيوب", "لينكد ان", "تويتر"],
+      "answer": "تويتر"
+    },
+    {
+      "id": 19,
+      "question": "نظام العنونة في طبقة ربط البيانات",
+      "options": ["MAC ADRESS", "IP ADRESS", "PORT ADRESS", "جميع ما سبق"],
+      "answer": "MAC ADRESS"
+    },
+    {
+      "id": 20,
+      "question": "عدد عناوين العنوان الفيزيائي MAC",
+      "options": ["2^8", "2^16", "2^32", "2^48"],
+      "answer": "2^48"
+    },
+    {
+      "id": 21,
+      "question": "مواقع ذات لغات برمجة بسيطة لا يمكن التعديل عليها الا من المصمم:",
+      "options": ["تفاعلية", "ساكنة", "تقليدية", "تواصل اجتماعي"],
+      "answer": "ساكنة"
+    },
+    {
+      "id": 22,
+      "question": "صفحات متصلة مع بعضها البعض بوحدات تشعبية:",
+      "options": ["المواقع الالكترونية", "مواقع التواصل", "إدارة المحتوى للنظام", "ليس مما سبق"],
+      "answer": "المواقع الالكترونية"
+    },
+    {
+      "id": 23,
+      "question": "البروتوكول المسؤول عن نفل الصفحة الرئيسية للموقع وعرض محتوياته للزبون:",
+      "options": ["HTML", "TCP", "HTTP", "DNS"],
+      "answer": "HTTP"
+    },
+    {
+      "id": 24,
+      "question": "أي من الممارسات التالية من الاثار السلبية لمواقع التواصل الاجتماعي:",
+      "options": ["الإدمان المفرط في استخدامها", "انتحال شخصية وهمية", "عدم موثوقية كل ما ينشر", "جميع ما سبق"],
+      "answer": "جميع ما سبق"
+    },
+    {
+      "id": 25,
+      "question": "يسمى تنسيق الرسالة في طبقة ربط البيانات",
+      "options": ["حزمة", "قطعة", "بت", "إطار"],
+      "answer": "إطار"
+    },
+    {
+      "id": 26,
+      "question": "تعد المواقع التي امتدادها edu مواقع:",
+      "options": ["حكومية", "شبكات", "تعليمية", "منظمات"],
+      "answer": "تعليمية"
+    },
+    {
+      "id": 27,
+      "question": "اسم يطلق على عالم الخيال وهو لتحقيق الإنجازات وتطوير الذات:",
+      "options": ["العالم الافتراضي", "العالم الواقعي", "العالم الخيالي", "العالم البسيط"],
+      "answer": "العالم الافتراضي"
+    },
+    {
+      "id": 28,
+      "question": "عدد خانات العنوان الفيزيائي ___ بت",
+      "options": ["16", "12", "48", "32"],
+      "answer": "48"
+    },
+    {
+      "id": 29,
+      "question": "المواقع الحكومية امتدادها:",
+      "options": ["org", "edu", "gov", "net"],
+      "answer": "gov"
+    },
+    {
+      "id": 30,
+      "question": "احدى المهن التالية هي مهن المستقبل في العالم الافتراضي:",
+      "options": ["الطبخ", "القيادة", "الحدادة", "التسويق"],
+      "answer": "التسويق"
+    },
+    {
+      "id": 31,
+      "question": "الجهاز المسؤول عن تنظيم عملية مرور البيانات بين الأجهزة",
+      "options": ["الموجه", "المعيد", "محول الشبكة", "جهاز نقطة الوصول"],
+      "answer": "محول الشبكة"
+    },
+    {
+      "id": 32,
+      "question": "يعتبر المجال في الموقع www.google.com.ps هو:",
+      "options": ["Google.com", "Com.ps", "Google.com.ps", "Com"],
+      "answer": "Google.com.ps"
+    },
+    {
+      "id": 33,
+      "question": "جرائم تحدث عن طريق مواقع التواصل الاجتماعي مثل الابتزاز:",
+      "options": ["القتل", "الجرائم الالكترونية", "الحرائق", "السرقات"],
+      "answer": "الجرائم الالكترونية"
+    },
+    {
+      "id": 34,
+      "question": "يستخدم المحول لتوصيل الأجهزة في شبكته المحلية المخطط",
+      "options": ["المدرج", "النجمي", "النقطي", "المركزي"],
+      "answer": "النجمي"
+    },
+    {
+      "id": 35,
+      "question": "من المواقع التفاعلية:",
+      "options": ["الشخصية", "التعريفية", "الألعاب", "الاجتماعية"],
+      "answer": "الاجتماعية"
+    },
+    {
+      "id": 36,
+      "question": "الحقل المسؤول عن تفحص الأخطاء في نهاية الإطار",
+      "options": ["DHCP", "FSC", "FCS", "DNS"],
+      "answer": "FCS"
+    },
+    {
+      "id": 37,
+      "question": "تعد المواقع التي امتدادها org مواقع:",
+      "options": ["حكومية", "شبكات", "تعليمية", "منظمات"],
+      "answer": "منظمات"
+    },
+    {
+      "id": 38,
+      "question": "أي من التالي احدى المهن المستقبلية للعالم الافتراضي:",
+      "options": ["تصميم الوسائط المتعددة", "تصميم المواقع الالكترونية", "الترجمة", "جميع ما سبق"],
+      "answer": "جميع ما سبق"
+    },
+    {
+      "id": 39,
+      "question": "اذا اردنا ربط 203 أجهزة على شبكة فإن القناع الأنسب هو:",
+      "options": ["255.0.255.0", "255.0.0.0", "255.255.0.0", "255.255.255.0"],
+      "answer": "255.255.255.0"
+    },
+    {
+      "id": 40,
+      "question": "في الموقع www.google.com.ps ملحق الموقع هو:",
+      "options": ["Ps", "Com", "Com.ps", "Google.com"],
+      "answer": "Com.ps"
+    },
+    {
+      "id": 41,
+      "question": "احدى المهارات التالية تتوافر في مهنة تصميم الوسائط المتعددة:",
+      "options": ["معرفة في البرمجة", "معالجة الصوت والفيديو", "ادخال البيانات", "تصميم ألعاب ترفيهية"],
+      "answer": "معالجة الصوت والفيديو"
+    },
+    {
+      "id": 42,
+      "question": "ما هو عدد عناوين القناع 255.255.255.0",
+      "options": ["2^4", "2^6", "2^8", "2^10"],
+      "answer": "2^8"
+    },
+    {
+      "id": 43,
+      "question": "يجب على أحد أصحاب المهن التالية أن يتوافر بتقييم الإنتاج وأداء المنتج:",
+      "options": ["مستشار الإنتاجية", "البرمجة", "ادخال البيانات", "التسويق الالكتروني"],
+      "answer": "مستشار الإنتاجية"
+    },
+    {
+      "id": 44,
+      "question": "المواقع التي امتدادها net تعد مواقع:",
+      "options": ["شبكات", "تجارية", "منظمات", "حكومية"],
+      "answer": "شبكات"
+    },
+    {
+      "id": 45,
+      "question": "تقديم الخدمات الإخبارية والبرامج المتلفزة دور المجال:",
+      "options": ["الاجتماعي", "التعليمي", "الإعلامي", "التجاري"],
+      "answer": "الإعلامي"
+    },
+    {
+      "id": 46,
+      "question": "يسمى الموقع الالكتروني ذات تصميم جيد عندما يتصف بــ:",
+      "options": ["جاذبية عنوانه", "شمولية موضوعاته", "موضوعات حصرية وانسجام المحتوى واللون", "جميع ما سبق"],
+      "answer": "جميع ما سبق"
+    },
+    {
+      "id": 47,
+      "question": "نشر الإعلانات الممولة وبيع البضائع على المواقع الالكترونية من دور المجال:",
+      "options": ["التجاري", "الاجتماعي", "التعليمي", "الإعلامي"],
+      "answer": "التجاري"
+    },
+    {
+      "id": 48,
+      "question": "تصميم الألعاب الترفيهية والتطبيقات التجارية من مهارات مهنة:",
+      "options": ["تصميم المواقع الالكترونية", "البرمجة", "صيانة الحاسوب والشبكات", "التسويق"],
+      "answer": "البرمجة"
+    },
+    {
+      "id": 49,
+      "question": "أي من التالية من الجرائم الالكترونية على منصات التواصل الاجتماعي:",
+      "options": ["الابتزاز", "الاختراق", "التشهير", "جميع ما سبق"],
+      "answer": "جميع ما سبق"
+    },
+    {
+      "id": 50,
+      "question": "مواقع المنظمات امتدادها:",
+      "options": ["Org", "Edy", "Gov", "Net"],
+      "answer": "Org"
+    }
+  ]
+
+
+            };
+            
+            // تعيين اسم المادة
+            document.getElementById('subject-name').textContent = `اختبار ${subjectName}`;
+            
+            // إنشاء قائمة الوحدات
+            const unitsList = document.getElementById('units-list');
+            units.forEach(unit => {
+                const unitBtn = document.createElement('button');
+                unitBtn.className = 'unit-btn';
+                unitBtn.textContent = unit.name;
+                unitBtn.dataset.unitId = unit.id;
+                unitBtn.addEventListener('click', () => startQuiz(unit.id));
+                unitsList.appendChild(unitBtn);
+            });
+            
+            // متغيرات النظام
+            let currentUnit = null;
+            let currentPart = 1;
+            let totalParts = 0;
+            let userAnswers = {};
+            let timerInterval = null;
+            let startTime = null;
+            let timeLeft = localStorage.getItem('quiz_time_left') ? parseInt(localStorage.getItem('quiz_time_left')) : 3600; // 30 دقيقة بالثواني
+            
+            // عناصر واجهة المستخدم
+            const quizSection = document.getElementById('quiz-section');
+            const resultsSection = document.getElementById('results');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const printBtn = document.getElementById('print-btn');
+            
+            // بدء المؤقت
+            function startTimer() {
+                startTime = Date.now();
+                updateTimerDisplay();
+                timerInterval = setInterval(updateTimer, 1000);
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+            }
+            
+            // تحديث المؤقت
+            function updateTimer() {
+                timeLeft--;
+                updateTimerDisplay();
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }
+            
+            // تحديث عرض المؤقت
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بدء الاختبار
+            function startQuiz(unitId) {
+                document.getElementById('overall-results').style.display = 'none';
+
+                currentUnit = unitId;
+                userAnswers = {};
+                currentPart = 1;
+                
+                // إخفاء قائمة الوحدات
+                unitsList.style.display = 'none';
+                
+                // عرض قسم الاختبار
+                quizSection.style.display = 'block';
+                quizSection.classList.add('active');
+                
+                // إعداد الأسئلة
+                setupQuestions(unitId);
+                
+                // بدء المؤقت
+                if (!timerInterval) {
+                    startTimer();
+                }
+            }
+            
+            // إعداد الأسئلة
+            function setupQuestions(unitId) {
+                const questions = quizzes[unitId];
+                totalParts = Math.ceil(questions.length / 3);
+                
+                // مسح الأقسام السابقة
+                const quizSection = document.getElementById('quiz-section');
+                const existingParts = quizSection.querySelectorAll('.question-part');
+                existingParts.forEach(part => {
+                    if (!part.classList.contains('active')) {
+                        part.remove();
+                    }
+                });
+                
+                // إنشاء أقسام جديدة
+                for (let i = 1; i <= totalParts; i++) {
+                    if (i === 1) continue; // تخطي القسم الأول الموجود بالفعل
+                    
+                    const partDiv = document.createElement('div');
+                    partDiv.className = 'question-part';
+                    partDiv.dataset.part = i;
+                    quizSection.insertBefore(partDiv, document.querySelector('.navigation-btns'));
+                }
+                
+                // تعبئة الأسئلة في الأقسام
+                questions.forEach((question, index) => {
+                    const partNumber = Math.floor(index / 3) + 1;
+                    const partDiv = document.querySelector(`.question-part[data-part="${partNumber}"]`);
+                    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.dataset.questionId = question.id;
+                    
+                    const questionTitle = document.createElement('h3');
+                    questionTitle.textContent = `السؤال ${index + 1}: ${question.question}`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options';
+                    
+                    question.options.forEach((option, optIndex) => {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'option';
+                        optionDiv.textContent = option;
+                        optionDiv.dataset.option = option;
+                        
+                        optionDiv.addEventListener('click', function() {
+                            // إزالة التحديد من جميع الخيارات لهذا السؤال
+                            const allOptions = this.parentElement.querySelectorAll('.option');
+                            allOptions.forEach(opt => opt.classList.remove('selected'));
+                            
+                            // تحديد الخيار الحالي
+                            this.classList.add('selected');
+                            
+                            // حفظ الإجابة
+                            userAnswers[question.id] = option;
+                        });
+                        
+                        optionsDiv.appendChild(optionDiv);
+                    });
+                    
+                    questionDiv.appendChild(questionTitle);
+                    questionDiv.appendChild(optionsDiv);
+                    partDiv.appendChild(questionDiv);
+                });
+                
+                // عرض القسم الأول
+                showPart(1);
+            }
+            
+            // عرض قسم معين
+            function showPart(partNumber) {
+                // إخفاء جميع الأقسام
+                document.querySelectorAll('.question-part').forEach(part => {
+                    part.classList.remove('active');
+                });
+                
+                // عرض القسم المطلوب
+                document.querySelector(`.question-part[data-part="${partNumber}"]`).classList.add('active');
+                
+                // تحديث أزرار التنقل
+                prevBtn.disabled = partNumber === 1;
+                nextBtn.disabled = partNumber === totalParts;
+                
+                // تحديث الإجابات المحددة مسبقاً
+                const currentPartQuestions = document.querySelectorAll(`.question-part[data-part="${partNumber}"] .question`);
+                currentPartQuestions.forEach(questionDiv => {
+                    const questionId = parseInt(questionDiv.dataset.questionId);
+                    if (userAnswers[questionId]) {
+                        const options = questionDiv.querySelectorAll('.option');
+                        options.forEach(option => {
+                            if (option.dataset.option === userAnswers[questionId]) {
+                                option.classList.add('selected');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // تقديم الاختبار
+            function submitQuiz() {
+                clearInterval(timerInterval);
+                localStorage.removeItem('quiz_time_left');
+                
+                // إخفاء قسم الاختبار
+                quizSection.style.display = 'none';
+                
+                // عرض النتائج
+                showResults();
+            }
+            
+            // عرض النتائج
+            function showResults() {
+                // إظهار قسم الإحصائيات بعد التسليم
+document.getElementById('overall-results').style.display = 'block';
+                const questions = quizzes[currentUnit];
+                let correctCount = 0;
+                const resultsContent = document.getElementById('results-content');
+                resultsContent.innerHTML = '';
+                
+                // حساب النتائج
+                questions.forEach(question => {
+                    const isCorrect = userAnswers[question.id] === question.answer;
+                    if (isCorrect) correctCount++;
+                    
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const resultQuestion = document.createElement('div');
+                    resultQuestion.className = 'result-question';
+                    resultQuestion.textContent = question.question;
+                    
+                    const userAnswerDiv = document.createElement('div');
+                    userAnswerDiv.className = `user-answer ${isCorrect ? 'correct' : 'wrong'}`;
+                    userAnswerDiv.textContent = `إجابتك: ${userAnswers[question.id] || 'لم يتم الإجابة'}`;
+                    
+                    const correctAnswerDiv = document.createElement('div');
+                    correctAnswerDiv.className = 'correct-answer';
+                    correctAnswerDiv.textContent = `الإجابة الصحيحة: ${question.answer}`;
+                    
+                    resultItem.appendChild(resultQuestion);
+                    resultItem.appendChild(userAnswerDiv);
+                    resultItem.appendChild(correctAnswerDiv);
+                    resultsContent.appendChild(resultItem);
+                });
+                
+                // عرض النتيجة النهائية
+                const scorePercentage = Math.round((correctCount / questions.length) * 100);
+                document.getElementById('score-display').textContent = `علامتك: ${correctCount} من ${questions.length} (${scorePercentage}%)`;
+                
+                // حساب الوقت المستغرق
+                const timeSpent = 3600 - timeLeft;
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                document.getElementById('time-taken').textContent = `الوقت المستغرق: ${minutes} دقائق و ${seconds} ثواني`;
+                
+                // حفظ النتيجة
+                const resultData = {
+                    unit: currentUnit,
+                    score: correctCount,
+                    total: questions.length,
+                    percentage: scorePercentage,
+                    timeSpent: `${minutes} دقائق و ${seconds} ثواني`
+                };
+                
+                // حفظ جميع النتائج
+                let allResults = JSON.parse(localStorage.getItem('quiz_results_all')) || [];
+                allResults.push(resultData);
+                localStorage.setItem('quiz_results_techSc', JSON.stringify(allResults));
+                
+                // تحديث الإحصائيات العامة
+                updateOverallResults();
+                
+                // عرض قسم النتائج
+                resultsSection.style.display = 'block';
+                saveQuizResult(correctCount, questions.length, `${minutes} دقائق و ${seconds} ثواني`);
+
+            }
+            
+            // أحداث الأزرار
+            prevBtn.addEventListener('click', function() {
+                if (currentPart > 1) {
+                    currentPart--;
+                    showPart(currentPart);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentPart < totalParts) {
+                    currentPart++;
+                    showPart(currentPart);
+                }
+            });
+            
+            submitBtn.addEventListener('click', submitQuiz);
+            
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // استعادة المؤقت إذا كان هناك اختبار جاري
+            if (localStorage.getItem('quiz_time_left')) {
+                updateTimerDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

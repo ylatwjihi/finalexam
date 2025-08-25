@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الاختبارات الإلكتروني - اللغة الانجليزية</title>
+    <style>
+        :root {
+            --primary-color: #3d6e6a; /* أخضر غامق بارد */
+            --secondary-color: #455A64; /* رمادي مزرق */
+            --light-color: #CFD8DC; /* رمادي فاتح */
+            --dark-color: #263238; /* أسود رمادي */
+            --correct-color: #329d62; /* أخضر للإجابات الصحيحة */
+            --wrong-color: #F44336; /* أحمر للإجابات الخاطئة */
+        }
+            
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .timer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            display: inline-block;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+        
+        .units-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .unit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .unit-btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quiz-section {
+            display: none;
+        }
+        
+        .quiz-section.active {
+            display: block;
+        }
+        
+        .question-part {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .question-part.active {
+            display: block;
+        }
+        
+        .question {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .question h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .option {
+            background-color: white;
+            border: 1px solid var(--light-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: var(--secondary-color);
+        }
+        
+        .option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .navigation-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-btn:disabled {
+            background-color: var(--light-color);
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        .submit-btn:hover {
+            background-color: #1B5E20;
+        }
+        
+        .results {
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .results h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-color);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .user-answer.correct {
+            color: var(--correct-color);
+        }
+        
+        .user-answer.wrong {
+            color: var(--wrong-color);
+        }
+        
+        .correct-answer {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+        
+        .time-taken {
+            text-align: center;
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .print-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .print-btn:hover {
+            background-color: #37474F;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: block;
+        }
+        
+        .image-note {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .unit-btn, .timer, .nav-btn, .submit-btn, .print-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 50px;" id="subject-name">نظام الاختبارات الإلكتروني | الانجليزية</h1>
+      <!-- 🔷 قسم عرض إحصائيات المادة -->
+<div class="overall-results" id="overall-results-box">
+  <h3>📊 معدل المادة</h3>
+  <canvas id="overallResultsChart"></canvas>
+  <div id="overallResultsDetails" class="overall-stats"></div>
+</div>
+
+<!-- 🔷 مكتبة الرسم البياني -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- 🔷 تنسيقات عرض الإحصائيات -->
+<style>
+  .overall-results {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+  #overallResultsChart {
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+  .overall-stats {
+    font-weight: bold;
+    color: #3d6e6a;
+  }
+</style>
+
+<!-- 🔷 سكربت عرض وتخزين الإحصائيات -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 🟨 غيّر هذا المفتاح حسب اسم المادة
+    const subjectKey = 'english'; // مثال: math, english, deen...
+
+    const ctx = document.getElementById('overallResultsChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['إجابات صحيحة', 'إجابات خاطئة'],
+        datasets: [{
+          data: [0, 0],
+          backgroundColor: ['#4CAF50', '#F44336']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    function updateOverallResults() {
+      const allResults = JSON.parse(localStorage.getItem('quiz_results_english' + subjectKey)) || [];
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+
+      allResults.forEach(r => {
+        totalCorrect += r.score;
+        totalQuestions += r.total;
+      });
+
+      const percent = totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+      document.getElementById('overallResultsDetails').textContent =
+        `عدد المحاولات: ${allResults.length} | المعدل العام: ${percent}%`;
+
+      chart.data.datasets[0].data = [totalCorrect, totalQuestions - totalCorrect];
+      chart.update();
+    }
+
+    // نداء مباشر عند تحميل الصفحة
+    updateOverallResults();
+
+    // 🔁 استدعِ هذه الدالة عند تسليم الاختبار لتخزين النتيجة
+    window.saveQuizResult = function(score, total, timeSpentText = '') {
+      let allResults = JSON.parse(localStorage.getItem('quiz_results_english' + subjectKey)) || [];
+      allResults.push({
+        score: score,
+        total: total,
+        percentage: Math.round((score / total) * 100),
+        timeSpent: timeSpentText
+      });
+      localStorage.setItem('quiz_results_english' + subjectKey, JSON.stringify(allResults));
+      updateOverallResults();
+    };
+  });
+</script>
+
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="units-list" id="units-list">
+            <!-- سيتم ملء هذا القسم بالوحدات عبر JavaScript -->
+        </div>
+        
+        <div class="quiz-section" id="quiz-section">
+            <div class="question-part active" data-part="1">
+                <!-- سيتم ملء الأسئلة عبر JavaScript -->
+            </div>
+            
+            <div class="navigation-btns">
+                <button class="nav-btn" id="prev-btn" disabled>السابق</button>
+                <button class="nav-btn" id="next-btn">التالي</button>
+            </div>
+            
+            <button class="submit-btn" id="submit-btn">تسليم الإجابات</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>نتيجة الاختبار</h2>
+            <div class="score-display" id="score-display"></div>
+            <div class="time-taken" id="time-taken"></div>
+            <div id="results-content">
+                <!-- سيتم ملء النتائج هنا -->
+            </div>
+            <button class="print-btn" id="print-btn">تصدير النتيجة كملف PDF</button>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الاختبارات
+        const quizzes = {
+            1: [
+                // أسئلة المفردات والجمل
+                {
+                    id: 1,
+                    question: "untrue reason =",
+                    options: ["factor", "excuse", "stuck", "participate"],
+                    answer: "excuse"
+                },
+                {
+                    id: 2,
+                    question: "good at making artistic things =",
+                    options: ["field", "factor", "creative", "routine"],
+                    answer: "creative"
+                },
+                {
+                    id: 3,
+                    question: "not compulsory =",
+                    options: ["optional", "potential", "routine", "field"],
+                    answer: "optional"
+                },
+                {
+                    id: 4,
+                    question: "possibility in the future =",
+                    options: ["potential", "routine", "on show", "creative"],
+                    answer: "potential"
+                },
+                {
+                    id: 5,
+                    question: "area of interest =",
+                    options: ["confident", "field", "creative", "potential"],
+                    answer: "field"
+                },
+                {
+                    id: 6,
+                    question: "If you spend money wisely, there's a greater _______________ of getting good returns.",
+                    options: ["potential", "optional", "creative", "factor"],
+                    answer: "potential"
+                },
+                {
+                    id: 7,
+                    question: "Hard work is an important _______________ in success.",
+                    options: ["creative", "foundation", "factor", "excuse"],
+                    answer: "factor"
+                },
+                {
+                    id: 8,
+                    question: "You should be _______________ when you speak English01 with foreigners.",
+                    options: ["on show", "excuse", "set", "confident"],
+                    answer: "confident"
+                },
+                {
+                    id: 9,
+                    question: "I got _____________ in traffic and arrived late to school.",
+                    options: ["participate", "excuse", "stuck", "optional"],
+                    answer: "stuck"
+                },
+                {
+                    id: 10,
+                    question: "I'm going to apply for a _____________ before going to university.",
+                    options: ["like-minded", "foundation course", "comfort zone", "participate in"],
+                    answer: "foundation course"
+                },
+                {
+                    id: 11,
+                    question: "He gave a bad ____________ for missing class.",
+                    options: ["routine", "excuse", "set", "confident"],
+                    answer: "excuse"
+                },
+
+                // أسئلة القواعد
+                {
+                    id: 12,
+                    question: "The sun __________ in the east and sets in the west.",
+                    options: ["rise", "rises", "is rising", "has risen"],
+                    answer: "rises"
+                },
+                {
+                    id: 13,
+                    question: "I think he _______________ better in learning French.",
+                    options: ["get", "has got", "gets", "is getting"],
+                    answer: "is getting"
+                },
+                {
+                    id: 14,
+                    question: "The pupils __________ the task yet.",
+                    options: ["have done", "have been doing", "haven't done", "aren't doing"],
+                    answer: "haven't done"
+                },
+                {
+                    id: 15,
+                    question: "We ________________ for the bus for nearly 30 minutes.",
+                    options: ["are waiting", "have been waiting", "wait", "waits"],
+                    answer: "have been waiting"
+                },
+                {
+                    id: 16,
+                    question: "She ___________ chocolate so much that she buys it every time she goes shopping.",
+                    options: ["loves", "love", "is loving", "has loved"],
+                    answer: "loves"
+                },
+                {
+                    id: 17,
+                    question: "Don't make noise! I ____________ of solving this puzzle.",
+                    options: ["think", "have thought", "am thinking", "has thought"],
+                    answer: "am thinking"
+                },
+                {
+                    id: 18,
+                    question: "We play football on Mondays, but this time we _______________ on Thursday.",
+                    options: ["are playing", "play", "have been playing", "plays"],
+                    answer: "are playing"
+                },
+                {
+                    id: 19,
+                    question: "How often ___________ you __________ your lessons?",
+                    options: ["have you revised", "have you been revising", "are you revising", "do you revise"],
+                    answer: "do you revise"
+                },
+                {
+                    id: 20,
+                    question: "The correct form of question is:",
+                    options: [
+                        "Have you ever eaten camel meat?",
+                        "Have you eaten ever camel meat?",
+                        "You have ever eaten camel meat?",
+                        "Do you ever eat camel meat?"
+                    ],
+                    answer: "Have you ever eaten camel meat?"
+                },
+
+                // أسئلة الفقرة (صورة 1)
+                {
+                    id: 21,
+                    question: "Where do you think Mahmoud is now?",
+                    options: ["Palestine", "England", "Egypt", "France"],
+                    answer: "England",
+                   image:"{{ asset('images/english01.jpg') }}"
+                },
+                {
+                    id: 22,
+                    question: "Lectures start ....",
+                    options: ["next week", "next month", "after two weeks", "tomorrow"],
+                    answer: "next week",
+                   image:"{{ asset('images/english01.jpg') }}"
+                },
+                {
+                    id: 23,
+                    question: "What DON'T the Palestine Society do?",
+                    options: [
+                        "food evenings",
+                        "local trips",
+                        "inviting guest speakers",
+                        "organize cultural events"
+                    ],
+                    answer: "local trips",
+                   image:"{{ asset('images/english01.jpg') }}"
+                },
+                {
+                    id: 24,
+                    question: "The highlighted pronoun 'They' in line 9 refers to:",
+                    options: [
+                        "students",
+                        "Palestine Society",
+                        "Palestinian people",
+                        "teachers"
+                    ],
+                    answer: "Palestine Society",
+                   image:"{{ asset('images/english01.jpg') }}"
+                },
+                {
+                    id: 25,
+                    question: "Mahmoud is a student in another country.",
+                    options: ["True", "False"],
+                    answer: "True",
+                   image:"{{ asset('images/english01.jpg') }}"
+                }
+            ],
+            
+            2: [
+// أسئلة المفردات
+{
+            id: 1,
+            question: "unable to move =",
+            options: ["factor", "excuse", "field", "stuck"],
+            answer: "stuck"
+        },
+        {
+            id: 2,
+            question: "part of the reason =",
+            options: ["field", "factor", "creative", "stuck"],
+            answer: "factor"
+        },
+        {
+            id: 3,
+            question: "everyday things =",
+            options: ["optional", "potential", "routine", "on show"],
+            answer: "routine"
+        },
+        {
+            id: 4,
+            question: "able to be seen =",
+            options: ["potential", "routine", "on show", "creative"],
+            answer: "on show"
+        },
+        {
+            id: 5,
+            question: "sure =",
+            options: ["confident", "field", "creative", "optional"],
+            answer: "confident"
+        },
+
+        // أسئلة إكمال الجمل
+        {
+            id: 6,
+            question: "The last question in the test was _______________, not everyone answered it.",
+            options: ["potential", "optional", "factor", "creative"],
+            answer: "optional"
+        },
+        {
+            id: 7,
+            question: "We need a ______________________ idea for the school project.",
+            options: ["creative", "factor", "excuse", "potential"],
+            answer: "creative"
+        },
+        {
+            id: 8,
+            question: "The teacher gave us a ____________ of questions to answer.",
+            options: ["on show", "set", "confident", "creative"],
+            answer: "set"
+        },
+        {
+            id: 9,
+            question: "Many students would like to _____________ in the science competition.",
+            options: ["participate", "excuse", "confident", "stuck"],
+            answer: "participate"
+        },
+        {
+            id: 10,
+            question: "My brother works in the medical _____________.",
+            options: ["creative", "factor", "optional", "field"],
+            answer: "field"
+        },
+        {
+            id: 11,
+            question: "I've joined the club to meet ______________ people.",
+            options: ["routine", "like-minded", "field", "set"],
+            answer: "like-minded"
+        },
+
+        // أسئلة القواعد
+        {
+            id: 12,
+            question: "I usually ________________ in the evenings to prepare for my exams.",
+            options: ["study", "am studying", "have studied", "studies"],
+            answer: "study"
+        },
+        {
+            id: 13,
+            question: "She ________________ on a challenging project at the moment, which is due next week.",
+            options: ["works", "is working", "has been working", "work"],
+            answer: "is working"
+        },
+        {
+            id: 14,
+            question: "We ___________ already __________ lunch, and now we are getting ready to go for a walk.",
+            options: ["have eaten", "are eating", "eat", "has eaten"],
+            answer: "have eaten"
+        },
+        {
+            id: 15,
+            question: "I _________________ for the past three hours, and I still have a few chapters.",
+            options: ["have studied", "have been studying", "am studying", "studying"],
+            answer: "have been studying"
+        },
+        {
+            id: 16,
+            question: "You can't call Ali. He _________ a shower.",
+            options: ["has", "has had", "have", "is having"],
+            answer: "is having"
+        },
+        {
+            id: 17,
+            question: "He ____________ waking up early, but he has no choice because of his job schedule.",
+            options: ["hate", "hates", "has hated", "is hating"],
+            answer: "hates"
+        },
+        {
+            id: 18,
+            question: "They ___________ with what I'm saying now.",
+            options: ["aren't agreeing", "am not agreeing", "don't agree", "haven't agreed"],
+            answer: "don't agree"
+        },
+        {
+            id: 19,
+            question: "He works in the mornings, but today he ___________ the day off.",
+            options: ["is taking", "takes", "take", "has taken"],
+            answer: "is taking"
+        },
+        {
+            id: 20,
+            question: "The correct form of question is:",
+            options: [
+                "Why are you look at me like that?",
+                "Why are you looking at me like that?",
+                "Why do you look at me like that?",
+                "Why have you look at me like that?"
+            ],
+            answer: "Why are you looking at me like that?"
+        },
+
+        // أسئلة الفقرة (صورة 2)
+        {
+            id: 21,
+            question: "The comfort zone is ....",
+            options: [
+                "a place you visit",
+                "routines you do",
+                "a trip you take",
+                "a subject you study"
+            ],
+            answer: "routines you do",
+           image:"{{ asset('images/english02.jpg') }}"
+        },
+        {
+            id: 22,
+            question: "Getting outside your comfort zone means ....",
+            options: [
+                "more challenges",
+                "more routines",
+                "safe activities",
+                "known abilities"
+            ],
+            answer: "more challenges",
+           image:"{{ asset('images/english02.jpg') }}"
+        },
+        {
+            id: 23,
+            question: "The highlighted word 'one' in line 1 refers to:",
+            options: [
+                "the writer",
+                "the reader",
+                "comfort zone",
+                "routine"
+            ],
+            answer: "comfort zone",
+           image:"{{ asset('images/english02.jpg') }}"
+        },
+        {
+            id: 24,
+            question: "Staying in your comfort zone is a way of facing unexpected and worrying events.",
+            options: ["True", "False"],
+            answer: "False",
+           image:"{{ asset('images/english02.jpg') }}"
+        },
+        {
+            id: 25,
+            question: "What is a comfort zone?",
+            options: [
+                "the area where you feel safe.",
+                "set of routines.",
+                "the area where's no challenges.",
+                "all mentioned above."
+            ],
+            answer: "all mentioned above.",
+           image:"{{ asset('images/english02.jpg') }}"
+        }
+    ],
+    3: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "not wanting =",
+            options: ["reluctant", "bald", "mention", "error"],
+            answer: "reluctant"
+        },
+        {
+            id: 2,
+            question: "things you know =",
+            options: ["keep in touch", "knowledge", "misunderstand", "reluctant"],
+            answer: "knowledge"
+        },
+        {
+            id: 3,
+            question: "someone you don't know =",
+            options: ["straight", "the latter", "colleague", "stranger"],
+            answer: "stranger"
+        },
+        {
+            id: 4,
+            question: "mistake =",
+            options: ["stranger", "the latter", "error", "the latter"],
+            answer: "error"
+        },
+        {
+            id: 5,
+            question: "I met my ________ at the office today.",
+            options: ["coincidence", "straight", "reluctant", "colleague"],
+            answer: "colleague"
+        },
+        {
+            id: 6,
+            question: "Go _________ and then turn left to get to the supermarket.",
+            options: ["straight", "bald", "mention", "reluctant"],
+            answer: "straight"
+        },
+        {
+            id: 7,
+            question: "She was ________ the dog gently.",
+            options: ["stranger", "error", "colleague", "patting"],
+            answer: "patting"
+        },
+        {
+            id: 8,
+            question: "The man became _________ at a young age.",
+            options: ["bald", "mention", "stranger", "keep in touch"],
+            answer: "bald"
+        },
+
+        // Grammar Questions
+        {
+            id: 9,
+            question: "We _______________ my cousin in our apartment for two nights.",
+            options: ["turned out", "put up", "came across", "ran into"],
+            answer: "put up"
+        },
+        {
+            id: 10,
+            question: "The test ___________ to be easier than I thought.",
+            options: ["turned out", "ran into", "caught up", "came across"],
+            answer: "turned out"
+        },
+        {
+            id: 11,
+            question: "The party was a good chance to _________ with old friend.",
+            options: ["come across", "turn out", "catch up", "run into"],
+            answer: "catch up"
+        },
+        {
+            id: 12,
+            question: "The ____________ could land the plane safely.",
+            options: ["co-author", "co-pilot", "co-writer", "co-operation"],
+            answer: "co-pilot"
+        },
+        {
+            id: 13,
+            question: "I think you ____________ me when I said that I didn't like olives on pizza.",
+            options: ["misled", "mistook", "misbehaved", "misheard"],
+            answer: "misheard"
+        },
+        {
+            id: 14,
+            question: "I chose a book to read while my friends ____________ lunch in the kitchen.",
+            options: ["were preparing", "prepared", "had prepared", "are preparing"],
+            answer: "were preparing"
+        },
+        {
+            id: 15,
+            question: "They were studying for the final exams when the teacher __________ in to announce the results.",
+            options: ["was coming", "had come", "came", "were coming"],
+            answer: "came"
+        },
+        {
+            id: 16,
+            question: "As soon as the phone rang, I ___________ to answer.",
+            options: ["jumped", "was jumping", "had jumped", "jump"],
+            answer: "jumped"
+        },
+
+        // Paragraph Questions (Image 3)
+        {
+            id: 17,
+            question: "Old people always face coincidences more than the young.",
+            options: ["True", "False"],
+            answer: "True",
+            image: "{{ asset('images/english03.jpg') }}"
+        },
+        {
+            id: 18,
+            question: "What will happen if you talk to strangers a lot?",
+            options: [
+                "you won't come across coincidences",
+                "you will come across coincidences",
+                "you will find out why coincidences happen",
+                "none of the above"
+            ],
+            answer: "you will come across coincidences",
+            image: "{{ asset('images/english03.jpg') }}"
+        },
+        {
+            id: 19,
+            question: "Why is the writer surprised?",
+            options: [
+                "because coincidences don't happen very often",
+                "because people's lives are more connected",
+                "because there are so many events in our lives",
+                "because he doesn't like talking to strangers"
+            ],
+            answer: "because coincidences don't happen very often",
+            image: "{{ asset('images/english03.jpg') }}"
+        },
+        {
+            id: 20,
+            question: "The highlighted word 'the more' in line 22 refers to:",
+            options: ["the writer", "coincidences", "events", "people"],
+            answer: "people",
+            image: "{{ asset('images/english03.jpg') }}"
+        }
+    ],
+
+    // Unit 3 - Version 2
+    4: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "without hair =",
+            options: ["reluctant", "bald", "mention", "coincidence"],
+            answer: "bald"
+        },
+        {
+            id: 2,
+            question: "getting the wrong idea =",
+            options: ["keep in touch", "knowledge", "reluctant", "misunderstand"],
+            answer: "misunderstand"
+        },
+        {
+            id: 3,
+            question: "immediately =",
+            options: ["straight", "stranger", "colleague", "stranger"],
+            answer: "straight"
+        },
+        {
+            id: 4,
+            question: "the last one mentioned =",
+            options: ["stranger", "error", "reluctant", "the latter"],
+            answer: "the latter"
+        },
+        {
+            id: 5,
+            question: "It's a funny ____________ that we met at the same place.",
+            options: ["coincidence", "straight", "reluctant", "colleague"],
+            answer: "coincidence"
+        },
+        {
+            id: 6,
+            question: "Don't forget to ____________ my name in the report.",
+            options: ["straight", "colleague", "bald", "mention"],
+            answer: "mention"
+        },
+        {
+            id: 7,
+            question: "There was an ____________ in my math answer, so the teacher asked me to try again.",
+            options: ["stranger", "error", "patting", "colleague"],
+            answer: "error"
+        },
+
+        // Grammar Questions
+        {
+            id: 8,
+            question: "Let's ____________ by WhatsApp while you are away.",
+            options: ["bald", "mention", "straight", "keep in touch"],
+            answer: "keep in touch"
+        },
+        {
+            id: 9,
+            question: "I ____________ an interesting article online.",
+            options: ["turned out", "put up", "came across", "ran into"],
+            answer: "came across"
+        },
+        {
+            id: 10,
+            question: "She ____________ an old friend yesterday.",
+            options: ["turned out", "ran into", "caught up", "came across"],
+            answer: "ran into"
+        },
+        {
+            id: 11,
+            question: "They ______ me ______ when I had no place to stay.",
+            options: ["put up", "catch up", "turned out", "run into"],
+            answer: "put up"
+        },
+        {
+            id: 12,
+            question: "Good ____________ between students helps them learn better.",
+            options: ["co-author", "co-operation", "co-writer", "co-pilot"],
+            answer: "co-operation"
+        },
+        {
+            id: 13,
+            question: "Don't ____________ me, I just want to help.",
+            options: ["mislead", "misbehave", "mistake", "misunderstand"],
+            answer: "misunderstand"
+        },
+        {
+            id: 14,
+            question: "He worked as a ____________ with his professor on the research.",
+            options: ["co-author", "co-worker", "co-ordinated", "co-founder"],
+            answer: "co-author"
+        },
+        {
+            id: 15,
+            question: "He was talking on the phone when his car suddenly ______________ on the highway.",
+            options: ["were breaking", "broke down", "had broken down", "breaks down"],
+            answer: "broke down"
+        },
+
+        // Paragraph Questions (Image 4)
+        {
+            id: 16,
+            question: "Why did the woman make cakes?",
+            options: [
+                "because she wants to do it",
+                "to have fun with her daughter",
+                "because the bananas were going bad",
+                "to spend time doing something useful"
+            ],
+            answer: "because the bananas were going bad",
+            image: "{{ asset('images/english04.jpg') }}"
+        },
+        {
+            id: 17,
+            question: "The highlighted pronoun 'them' in line 14 refers to:",
+            options: ["banana cakes", "Fatima and her mother", "the neighbours", "bananas"],
+            answer: "bananas",
+            image: "{{ asset('images/english04.jpg') }}"
+        },
+        {
+            id: 18,
+            question: "Who decided to take cakes to Mr Aziz?",
+            options: ["Fatima", "Fatima's mother", "another neighbour", "the salesman"],
+            answer: "Fatima's mother",
+            image: "{{ asset('images/english04.jpg') }}"
+        },
+        {
+            id: 19,
+            question: "Fatima's mother made the banana cake alone.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "{{ asset('images/english04.jpg') }}"
+        }
+    ],
+
+    // Unit 7 - Version 1
+    5: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "earn enough money to survive =",
+            options: ["charity", "fantasy", "controversial", "make a living"],
+            answer: "make a living"
+        },
+        {
+            id: 2,
+            question: "give good value =",
+            options: ["reveal", "charity", "controversial", "worth"],
+            answer: "worth"
+        },
+        {
+            id: 3,
+            question: "getting a job =",
+            options: ["employment", "outweigh", "worth", "stage fright"],
+            answer: "employment"
+        },
+        {
+            id: 4,
+            question: "from the start to the end =",
+            options: ["reveal", "neglect", "throughout", "worth"],
+            answer: "throughout"
+        },
+        {
+            id: 5,
+            question: "The school organized a _______________ event to help poor families.",
+            options: ["reveal", "charity", "throughout", "controversial"],
+            answer: "charity"
+        },
+        {
+            id: 6,
+            question: "The teacher avoided talking about _______________ topics.",
+            options: ["fantasy", "employment", "prospects", "controversial"],
+            answer: "controversial"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "The garden looks bad because they ____________ it.",
+            options: ["charity", "outweigh", "stage fright", "neglect"],
+            answer: "neglect"
+        },
+        {
+            id: 8,
+            question: "The results will be _____________ tomorrow.",
+            options: ["co-ordinated", "revealed", "outweigh", "worth"],
+            answer: "revealed"
+        },
+        {
+            id: 9,
+            question: "Many employees are worried about future job ____________ due to the economic problems.",
+            options: ["application", "security", "opportunities", "prospect"],
+            answer: "prospect"
+        },
+        {
+            id: 10,
+            question: "She is not suitable ___ this job.",
+            options: ["in", "for", "of", "from"],
+            answer: "for"
+        },
+        {
+            id: 11,
+            question: "I had to choose ___ high salary and job satisfaction.",
+            options: ["between", "from", "to", "about"],
+            answer: "between"
+        },
+        {
+            id: 12,
+            question: "Are you coming to the meeting? He asked me ....",
+            options: [
+                "if I was coming to the meeting",
+                "whether I would come to the meeting",
+                "if was I coming to the meeting",
+                "if I had come to the meeting"
+            ],
+            answer: "if I was coming to the meeting"
+        },
+
+        // Paragraph Questions (Image 5)
+        {
+            id: 13,
+            question: "The highlighted pronoun 'they' in paragraph 1 refers to:",
+            options: ["teachers", "future pupils", "university heads", "schools"],
+            answer: "future pupils",
+            image: "{{ asset('images/english05.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "Why does Milton School interview future pupils?",
+            options: [
+                "To give them school subjects",
+                "To give them careers advice",
+                "To arrange work experience",
+                "To talk about hopes and preferences"
+            ],
+            answer: "To talk about hopes and preferences",
+            image: "{{ asset('images/english05.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "Milton School chooses the places where students do work experience.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "{{ asset('images/english05.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "Milton School brings in careers advisers because ....",
+            options: [
+                "they don't have money",
+                "careers advisers work for free",
+                "teachers aren't qualified as careers advisers",
+                "All mention above"
+            ],
+            answer: "teachers aren't qualified as careers advisers",
+            image: "{{ asset('images/english05.jpg') }}"
+        }
+    ],
+
+    // Unit 7 - Version 2
+    6: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "non-profit organization =",
+            options: ["worth", "charity", "fantasy", "make a living"],
+            answer: "charity"
+        },
+        {
+            id: 2,
+            question: "making a lot of argument =",
+            options: ["reveal", "controversial", "outweigh", "worth"],
+            answer: "controversial"
+        },
+        {
+            id: 3,
+            question: "more important than =",
+            options: ["employment", "charity", "outweigh", "stage fright"],
+            answer: "outweigh"
+        },
+        {
+            id: 4,
+            question: "show =",
+            options: ["reveal", "neglect", "throughout", "stage fright"],
+            answer: "reveal"
+        },
+        {
+            id: 5,
+            question: "He found __________ in a local company after graduation.",
+            options: ["fantasy", "employment", "controversial", "stage fright"],
+            answer: "employment"
+        },
+        {
+            id: 6,
+            question: "She loves reading __________ books about magic.",
+            options: ["fantasy", "employment", "prospects", "controversial"],
+            answer: "fantasy"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "I have __________ and can't speak in front of people.",
+            options: ["employment", "outweigh", "co-ordinated", "stage fright"],
+            answer: "stage fright"
+        },
+        {
+            id: 8,
+            question: "The team __________ their efforts to finish the project.",
+            options: ["co-ordinated", "outweigh", "neglect", "reveal"],
+            answer: "co-ordinated"
+        },
+        {
+            id: 9,
+            question: "She sent her job ___________ to several companies.",
+            options: ["application", "security", "prospect", "description"],
+            answer: "application"
+        },
+        {
+            id: 10,
+            question: "She is an expert ___ computer programming.",
+            options: ["in", "on", "of", "for"],
+            answer: "in"
+        },
+        {
+            id: 11,
+            question: "Where did you buy this book? He asked me ....",
+            options: [
+                "where I had bought that book",
+                "where I bought that book",
+                "where I was buying that book",
+                "where did I buy that book"
+            ],
+            answer: "where I had bought that book"
+        },
+        {
+            id: 12,
+            question: "Why are you studying so late? She asked ....",
+            options: [
+                "why was I studying so late",
+                "why I had studied so late",
+                "why I was studying so late",
+                "why I studied so late"
+            ],
+            answer: "why I was studying so late"
+        },
+
+        // Paragraph Questions (Image 6)
+        {
+            id: 13,
+            question: "According to the Education Minister, how could students improve their job prospects?",
+            options: [
+                "by avoiding arts subjects",
+                "by choosing science and maths",
+                "A & B",
+                "None of the above"
+            ],
+            answer: "A & B",
+            image: "{{ asset('images/english06.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "In the past, many students neglected languages and history.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "{{ asset('images/english06.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "The highlighted pronoun 'his' in paragraph 2 refers to:",
+            options: [
+                "one of the teachers",
+                "a student",
+                "a reporter",
+                "the Education Minister"
+            ],
+            answer: "the Education Minister",
+            image: "{{ asset('images/english06.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "Why are arts subjects important?",
+            options: [
+                "because they involve important skills",
+                "because they provide an understanding of the world",
+                "because they involve creativity",
+                "all mentioned above"
+            ],
+            answer: "all mentioned above",
+            image: "{{ asset('images/english06.jpg') }}"
+        }
+    ],
+
+    // Unit 8 - Version 1
+    7: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "related to pictures =",
+            options: ["graphic", "attempt", "returns", "distribute"],
+            answer: "graphic"
+        },
+        {
+            id: 2,
+            question: "very expensive, luxury item =",
+            options: ["breakthrough", "currently", "lack", "upmarket"],
+            answer: "upmarket"
+        },
+        {
+            id: 3,
+            question: "not having enough =",
+            options: ["humanitarian", "sector", "lack", "run"],
+            answer: "lack"
+        },
+        {
+            id: 4,
+            question: "profits =",
+            options: ["breakthrough", "currently", "attempt", "returns"],
+            answer: "returns"
+        },
+        {
+            id: 5,
+            question: "He made an ______________ to solve the hard question, but it didn't succeed.",
+            options: ["graphic", "attempt", "returns", "distribute"],
+            answer: "attempt"
+        },
+        {
+            id: 6,
+            question: "She joined a _____________ group to help refugees.",
+            options: ["humanitarian", "breakthrough", "returns", "distribute"],
+            answer: "humanitarian"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "Students are ______________ revising for the exam.",
+            options: ["marketing", "sector", "takeover", "currently"],
+            answer: "currently"
+        },
+        {
+            id: 8,
+            question: "You need to be clever to ______________ your business well.",
+            options: ["humanitarian", "sector", "lack", "run"],
+            answer: "run"
+        },
+        {
+            id: 9,
+            question: "Good ______________ helps sell more products.",
+            options: ["market value", "market share", "market research", "marketing"],
+            answer: "marketing"
+        },
+        {
+            id: 10,
+            question: "You must pay the bill ____ receipt.",
+            options: ["in", "on", "to", "for"],
+            answer: "on"
+        },
+        {
+            id: 11,
+            question: "They need to __________ some money to pay tax.",
+            options: ["break through", "breakthrough", "cutback", "cut back"],
+            answer: "cut back"
+        },
+        {
+            id: 12,
+            question: "The co-pilot did well during the __________ and landing.",
+            options: ["breakdown", "take-off", "takeover", "breakthrough"],
+            answer: "take-off"
+        },
+
+        // Paragraph Questions (Image 7)
+        {
+            id: 13,
+            question: "Why did the IT company give Pete money?",
+            options: [
+                "to start up his business",
+                "to buy his app",
+                "to develop more ideas",
+                "none of the above"
+            ],
+            answer: "to buy his app",
+            image: "{{ asset('images/english07.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "Pete learnt from his mistakes.",
+            options: ["True", "False"],
+            answer: "True",
+            image: "{{ asset('images/english07.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "In what field does Pete work?",
+            options: [
+                "making jewelry",
+                "making online music videos",
+                "IT",
+                "graphic design"
+            ],
+            answer: "IT",
+            image: "{{ asset('images/english07.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "The highlighted pronoun 'he' refers to:",
+            options: [
+                "the company manager",
+                "Pete Finn",
+                "Pete's friend",
+                "none of the above"
+            ],
+            answer: "Pete Finn",
+            image: "{{ asset('images/english07.jpg') }}"
+        }
+    ],
+
+    // Unit 8 - Version 2
+    8: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "try =",
+            options: ["graphic", "attempt", "returns", "distribute"],
+            answer: "attempt"
+        },
+        {
+            id: 2,
+            question: "event the made a big difference =",
+            options: ["breakthrough", "currently", "lack", "upmarket"],
+            answer: "breakthrough"
+        },
+        {
+            id: 3,
+            question: "related to helping people =",
+            options: ["humanitarian", "sector", "lack", "run"],
+            answer: "humanitarian"
+        },
+        {
+            id: 4,
+            question: "at the present time =",
+            options: ["breakthrough", "currently", "attempt", "returns"],
+            answer: "currently"
+        },
+        {
+            id: 5,
+            question: "He is good at making ____________ designs.",
+            options: ["graphic", "attempt", "returns", "distribute"],
+            answer: "graphic"
+        },
+        {
+            id: 6,
+            question: "The teacher will _______________ the papers to the class.",
+            options: ["humanitarian", "breakthrough", "returns", "distribute"],
+            answer: "distribute"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "The education ______________ needs more support.",
+            options: ["marketing", "sector", "takeover", "currently"],
+            answer: "sector"
+        },
+        {
+            id: 8,
+            question: "There is a _______________ of clean water in some places in Gaza due to war.",
+            options: ["humanitarian", "sector", "lack", "run"],
+            answer: "lack"
+        },
+        {
+            id: 9,
+            question: "The company did  ____________ to understand customer needs.",
+            options: ["market value", "market share", "market research", "marketing"],
+            answer: "market research"
+        },
+        {
+            id: 10,
+            question: "There are many goods _____ sale.",
+            options: ["in", "on", "to", "for"],
+            answer: "on"
+        },
+        {
+            id: 11,
+            question: "The scientist made a big __________ in medicine.",
+            options: ["break through", "breakthrough", "cutback", "cut back"],
+            answer: "breakthrough"
+        },
+        {
+            id: 12,
+            question: "We were late because we had a __________ in the car.",
+            options: ["breakdown", "take-off", "takeover", "breakthrough"],
+            answer: "breakdown"
+        },
+
+        // Paragraph Questions (Image 8)
+        {
+            id: 13,
+            question: "Why can Anita's parents give advice to her?",
+            options: [
+                "because they love her",
+                "because they have lack of experience",
+                "because they are in business",
+                "because they know about financial figures"
+            ],
+            answer: "because they are in business",
+            image: "{{ asset('images/english08.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "The highlighted pronoun 'they' refers to:",
+            options: [
+                "Anita's friends",
+                "Anita's parents",
+                "Anita's customers",
+                "fashion shops"
+            ],
+            answer: "Anita's parents",
+            image: "{{ asset('images/english08.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "Anita neglects her parents' advice.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "{{ asset('images/english08.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "Anita got advice from ....",
+            options: [
+                "family members",
+                "friends",
+                "customers",
+                "competitors"
+            ],
+            answer: "family members",
+            image: "{{ asset('images/english08.jpg') }}"
+        }
+    ],
+
+    // Unit 9 - Version 1
+    9: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "very surprising =",
+            options: ["amateur", "astonishing", "combination", "objective"],
+            answer: "astonishing"
+        },
+        {
+            id: 2,
+            question: "not professional =",
+            options: ["amateur", "promising", "reserve", "rule out"],
+            answer: "amateur"
+        },
+        {
+            id: 3,
+            question: "have a good relationship =",
+            options: ["terror", "tragedy", "get on well", "trial"],
+            answer: "get on well"
+        },
+        {
+            id: 4,
+            question: "having future possibilities =",
+            options: ["infuriated", "judge", "objective", "promising"],
+            answer: "promising"
+        },
+        {
+            id: 5,
+            question: "great fear =",
+            options: ["dropped", "reserve", "rule out", "terror"],
+            answer: "terror"
+        },
+        {
+            id: 6,
+            question: "The new medicine is still in the _______________ stage.",
+            options: ["get on well", "trial", "rule out", "terror"],
+            answer: "trial"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "A good _______________ of study and rest helps students.",
+            options: ["judge", "objective", "combination", "amateur"],
+            answer: "combination"
+        },
+        {
+            id: 8,
+            question: "The teacher was _______________ by the noise.",
+            options: ["infuriated", "judge", "objective", "promising"],
+            answer: "infuriated"
+        },
+        {
+            id: 9,
+            question: "We must have a _______________ plan in case the first one doesn't work.",
+            options: ["amateur", "promising", "reserve", "rule out"],
+            answer: "reserve"
+        },
+        {
+            id: 10,
+            question: "He's _______________ and knows what to do.",
+            options: ["overconfident", "overwork", "underconfident", "underrated"],
+            answer: "overconfident"
+        },
+        {
+            id: 11,
+            question: "Gift shops usually _______________ tourists and sell products with high price.",
+            options: ["overcharge", "underpay", "undercharge", "overpay"],
+            answer: "overcharge"
+        },
+        {
+            id: 12,
+            question: "It may not happen, but I won't rule _____ the possibility.",
+            options: ["in", "on", "out", "for"],
+            answer: "out"
+        },
+
+        // Paragraph Questions (Image 09)
+        {
+            id: 13,
+            question: "The highlighted pronoun 'they' in line 4 refers to:",
+            options: ["IOC members", "sports", "players", "none of the above"],
+            answer: "sports",
+            image: "{{ asset('images/english09.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "The highlighted pronoun 'it' in line 7 refers to:",
+            options: ["Olympic Sports", "The USA", "baseball", "none of the above"],
+            answer: "baseball",
+            image: "{{ asset('images/english09.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "How many sports were there in the 2016 Olympic Games?",
+            options: ["26", "28", "30", "24"],
+            answer: "28",
+            image: "{{ asset('images/english09.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "As a result of being a majority in the IOC, European members .... the Olympics.",
+            options: [
+                "added golf and rugby to the",
+                "added baseball to the",
+                "excluded baseball from",
+                "none of the above"
+            ],
+            answer: "excluded baseball from",
+            image: "{{ asset('images/english09.jpg') }}"
+        }
+    ],
+
+    // Unit 9 - Version 2
+    10: [
+        // Vocabulary Questions
+        {
+            id: 1,
+            question: "reasons or qualifications =",
+            options: ["amateur", "astonishing", "criteria", "objective"],
+            answer: "criteria"
+        },
+        {
+            id: 2,
+            question: "deciding which is acceptable =",
+            options: ["combination", "promising", "judging", "rule out"],
+            answer: "judging"
+        },
+        {
+            id: 3,
+            question: "say it's impossible to include =",
+            options: ["rule out", "tragedy", "dropped", "trial"],
+            answer: "rule out"
+        },
+        {
+            id: 4,
+            question: "test =",
+            options: ["infuriated", "trial", "objective", "reserve"],
+            answer: "trial"
+        },
+        {
+            id: 5,
+            question: "second choice =",
+            options: ["dropped", "reserve", "rule out", "terror"],
+            answer: "reserve"
+        },
+        {
+            id: 6,
+            question: "The kids screamed in ____________ during the storm.",
+            options: ["get on well", "trial", "rule out", "terror"],
+            answer: "terror"
+        },
+
+        // Grammar Questions
+        {
+            id: 7,
+            question: "It was ____________ how fast he finished the exam.",
+            options: ["judge", "objective", "astonishing", "amateur"],
+            answer: "astonishing"
+        },
+        {
+            id: 8,
+            question: "He is an ____________ photographer, but his photos are good.",
+            options: ["amateur", "judge", "objective", "promising"],
+            answer: "amateur"
+        },
+        {
+            id: 9,
+            question: "The war on Gaza caused many ____________ in people's lives.",
+            options: ["get on well", "promising", "dropped", "tragedies"],
+            answer: "tragedies"
+        },
+        {
+            id: 10,
+            question: "____________ people without knowing them is wrong.",
+            options: ["objective", "promising", "terror", "judging"],
+            answer: "judging"
+        },
+        {
+            id: 11,
+            question: "If you ____________, you'll be exhausted.",
+            options: ["overconfident", "overwork", "underconfident", "underwork"],
+            answer: "overwork"
+        },
+        {
+            id: 12,
+            question: "Many employees are infuriated because they are ____________.",
+            options: ["overpaid", "overcharge", "underpaid", "undercharge"],
+            answer: "underpaid"
+        },
+
+        // Paragraph Questions (Image 10)
+        {
+            id: 13,
+            question: "Why do many young players stop playing football?",
+            options: [
+                "because of the low salaries",
+                "because they have problems with managers",
+                "because they get old",
+                "because of injuries"
+            ],
+            answer: "because of injuries",
+            image: "{{ asset('images/english10.jpg') }}"
+        },
+        {
+            id: 14,
+            question: "The highlighted word 'those' in line 15 refers to:",
+            options: ["writers", "players", "managers", "teams"],
+            answer: "players",
+            image: "{{ asset('images/english10.jpg') }}"
+        },
+        {
+            id: 15,
+            question: "Why did Tony Gill stop playing?",
+            options: [
+                "He broke his arm",
+                "He hurt his leg",
+                "He hurt his knee",
+                "none of the above"
+            ],
+            answer: "He hurt his leg",
+            image: "{{ asset('images/english10.jpg') }}"
+        },
+        {
+            id: 16,
+            question: "Wayne Barton's book tells the story of some famous and successful players.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "{{ asset('images/english10.jpg') }}"
+        }
+    ]
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // بيانات الاختبار
+            const subjectName = "اللغة الإنجليزية - جميع الفروع";
+            const units = [
+                { id: 1, name: "الوحدة الأولى - النموذج الأول" },
+                { id: 2, name: "الوحدة الأولى - النموذج الثاني" },
+                { id: 3, name: "الوحدة الثالثة - النموذج الاول" },
+                { id: 4, name: "الوحدة الثالثة - النموذج الثاني" },
+                { id: 5, name: "الوحدة السابعة - النموذج الأول" },
+                { id: 6, name: "الوحدة السابعة - النموذج الثاني" },
+                { id: 7, name: "الوحدة الثامنة - النموذج الأول" },
+                { id: 8, name: "الوحدة الثامنة - النموذج الثاني" },
+                { id: 9, name: "الوحدة التاسعة - النموذج الأول" },
+                { id: 10, name: "الوحدة التاسعة - النموذج الثاني" },
+                
+            ];
+            
+            // تعيين اسم المادة
+            document.getElementById('subject-name').textContent = `اختبار ${subjectName}`;
+            
+            // إنشاء قائمة الوحدات
+            const unitsList = document.getElementById('units-list');
+            units.forEach(unit => {
+                const unitBtn = document.createElement('button');
+                unitBtn.className = 'unit-btn';
+                unitBtn.textContent = unit.name;
+                unitBtn.dataset.unitId = unit.id;
+                unitBtn.addEventListener('click', () => startQuiz(unit.id));
+                unitsList.appendChild(unitBtn);
+            });
+            
+            // متغيرات النظام
+            let currentUnit = null;
+            let currentPart = 1;
+            let totalParts = 0;
+            let userAnswers = {};
+            let timerInterval = null;
+            let startTime = null;
+            let timeLeft = localStorage.getItem('quiz_time_left') ? parseInt(localStorage.getItem('quiz_time_left')) : 3600; // 30 دقيقة بالثواني
+            
+            // عناصر واجهة المستخدم
+            const quizSection = document.getElementById('quiz-section');
+            const resultsSection = document.getElementById('results');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const printBtn = document.getElementById('print-btn');
+            
+            // بدء المؤقت
+            function startTimer() {
+                startTime = Date.now();
+                updateTimerDisplay();
+                timerInterval = setInterval(updateTimer, 1000);
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+            }
+            
+            // تحديث المؤقت
+            function updateTimer() {
+                timeLeft--;
+                updateTimerDisplay();
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }
+            
+            // تحديث عرض المؤقت
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بدء الاختبار
+            function startQuiz(unitId) {
+                currentUnit = unitId;
+                userAnswers = {};
+                currentPart = 1;
+                
+                // إخفاء قائمة الوحدات
+                unitsList.style.display = 'none';
+                
+                // عرض قسم الاختبار
+                quizSection.style.display = 'block';
+                quizSection.classList.add('active');
+                
+                // إعداد الأسئلة
+                setupQuestions(unitId);
+                
+                // بدء المؤقت
+                if (!timerInterval) {
+                    startTimer();
+                }
+            }
+            
+            // إعداد الأسئلة
+            function setupQuestions(unitId) {
+                const questions = quizzes[unitId];
+                totalParts = Math.ceil(questions.length / 3);
+                
+                // مسح الأقسام السابقة
+                const quizSection = document.getElementById('quiz-section');
+                const existingParts = quizSection.querySelectorAll('.question-part');
+                existingParts.forEach(part => {
+                    if (!part.classList.contains('active')) {
+                        part.remove();
+                    }
+                });
+                
+                // إنشاء أقسام جديدة
+                for (let i = 1; i <= totalParts; i++) {
+                    if (i === 1) continue; // تخطي القسم الأول الموجود بالفعل
+                    
+                    const partDiv = document.createElement('div');
+                    partDiv.className = 'question-part';
+                    partDiv.dataset.part = i;
+                    quizSection.insertBefore(partDiv, document.querySelector('.navigation-btns'));
+                }
+                
+                // تعبئة الأسئلة في الأقسام
+                questions.forEach((question, index) => {
+                    const partNumber = Math.floor(index / 3) + 1;
+                    const partDiv = document.querySelector(`.question-part[data-part="${partNumber}"]`);
+                    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.dataset.questionId = question.id;
+                    
+                    const questionTitle = document.createElement('h3');
+                    questionTitle.textContent = `السؤال ${index + 1}: ${question.question}`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options';
+                    
+                    // إضافة الصورة إذا كانت موجودة
+                    if (question.image) {
+                        const imageNote = document.createElement('div');
+                        imageNote.className = 'image-note';
+                        imageNote.textContent = 'انظر إلى الصورة للإجابة:';
+                        
+                        const image = document.createElement('img');
+                        image.className = 'question-image';
+                        image.src = question.image;
+                        image.alt = 'صورة السؤال';
+                        
+                        questionDiv.appendChild(imageNote);
+                        questionDiv.appendChild(image);
+                    }
+                    
+                    question.options.forEach((option, optIndex) => {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'option';
+                        optionDiv.textContent = option;
+                        optionDiv.dataset.option = option;
+                        
+                        optionDiv.addEventListener('click', function() {
+                            // إزالة التحديد من جميع الخيارات لهذا السؤال
+                            const allOptions = this.parentElement.querySelectorAll('.option');
+                            allOptions.forEach(opt => opt.classList.remove('selected'));
+                            
+                            // تحديد الخيار الحالي
+                            this.classList.add('selected');
+                            
+                            // حفظ الإجابة
+                            userAnswers[question.id] = option;
+                        });
+                        
+                        optionsDiv.appendChild(optionDiv);
+                    });
+                    
+                    questionDiv.appendChild(questionTitle);
+                    questionDiv.appendChild(optionsDiv);
+                    partDiv.appendChild(questionDiv);
+                });
+                
+                // عرض القسم الأول
+                showPart(1);
+            }
+            
+            // عرض قسم معين
+            function showPart(partNumber) {
+                // إخفاء جميع الأقسام
+                document.querySelectorAll('.question-part').forEach(part => {
+                    part.classList.remove('active');
+                });
+                
+                // عرض القسم المطلوب
+                document.querySelector(`.question-part[data-part="${partNumber}"]`).classList.add('active');
+                
+                // تحديث أزرار التنقل
+                prevBtn.disabled = partNumber === 1;
+                nextBtn.disabled = partNumber === totalParts;
+                
+                // تحديث الإجابات المحددة مسبقاً
+                const currentPartQuestions = document.querySelectorAll(`.question-part[data-part="${partNumber}"] .question`);
+                currentPartQuestions.forEach(questionDiv => {
+                    const questionId = parseInt(questionDiv.dataset.questionId);
+                    if (userAnswers[questionId]) {
+                        const options = questionDiv.querySelectorAll('.option');
+                        options.forEach(option => {
+                            if (option.dataset.option === userAnswers[questionId]) {
+                                option.classList.add('selected');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // تقديم الاختبار
+            function submitQuiz() {
+                clearInterval(timerInterval);
+                localStorage.removeItem('quiz_time_left');
+                
+                // إخفاء قسم الاختبار
+                quizSection.style.display = 'none';
+                
+                // عرض النتائج
+                showResults();
+            }
+            
+            // عرض النتائج
+            function showResults() {
+                const questions = quizzes[currentUnit];
+                let correctCount = 0;
+                const resultsContent = document.getElementById('results-content');
+                resultsContent.innerHTML = '';
+                
+                // حساب النتائج
+                questions.forEach(question => {
+                    const isCorrect = userAnswers[question.id] === question.answer;
+                    if (isCorrect) correctCount++;
+                    
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const resultQuestion = document.createElement('div');
+                    resultQuestion.className = 'result-question';
+                    resultQuestion.textContent = question.question;
+                    
+                    const userAnswerDiv = document.createElement('div');
+                    userAnswerDiv.className = `user-answer ${isCorrect ? 'correct' : 'wrong'}`;
+                    userAnswerDiv.textContent = `إجابتك: ${userAnswers[question.id] || 'لم يتم الإجابة'}`;
+                    
+                    const correctAnswerDiv = document.createElement('div');
+                    correctAnswerDiv.className = 'correct-answer';
+                    correctAnswerDiv.textContent = `الإجابة الصحيحة: ${question.answer}`;
+                    
+                    // إضافة الصورة إذا كانت موجودة في النتائج
+                    if (question.image) {
+                        const image = document.createElement('img');
+                        image.className = 'question-image';
+                        image.src = question.image;
+                        image.alt = 'صورة السؤال';
+                        image.style.maxWidth = '300px';
+                        resultItem.appendChild(image);
+                    }
+                    
+                    resultItem.appendChild(resultQuestion);
+                    resultItem.appendChild(userAnswerDiv);
+                    resultItem.appendChild(correctAnswerDiv);
+                    resultsContent.appendChild(resultItem);
+                });
+                
+                // عرض النتيجة النهائية
+                const scorePercentage = Math.round((correctCount / questions.length) * 100);
+                document.getElementById('score-display').textContent = `علامتك: ${correctCount} من ${questions.length} (${scorePercentage}%)`;
+                
+                // حساب الوقت المستغرق
+                const timeSpent = 3600 - timeLeft;
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                document.getElementById('time-taken').textContent = `الوقت المستغرق: ${minutes} دقائق و ${seconds} ثواني`;
+                
+                // عرض قسم النتائج
+                resultsSection.style.display = 'block';
+                saveQuizResult(correctCount, questions.length, `${minutes} دقائق و ${seconds} ثواني`);
+
+            }
+            
+            // أحداث الأزرار
+            prevBtn.addEventListener('click', function() {
+                if (currentPart > 1) {
+                    currentPart--;
+                    showPart(currentPart);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentPart < totalParts) {
+                    currentPart++;
+                    showPart(currentPart);
+                }
+            });
+            
+            submitBtn.addEventListener('click', submitQuiz);
+            
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // استعادة المؤقت إذا كان هناك اختبار جاري
+            if (localStorage.getItem('quiz_time_left')) {
+                updateTimerDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

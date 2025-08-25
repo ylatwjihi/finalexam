@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>يلا اختبار | تسجيل الدخول</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #FF7A00;
+            --primary-light: #FF9A42;
+            --white: #FFFFFF;
+            --light-gray: #F5F5F5;
+            --gray: #E0E0E0;
+            --dark-gray: #757575;
+            --yellow: #FFF3E0;
+            --science-color: #4CAF50;
+            --arts-color: #2196F3;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #FF7A00 0%, #FFB800 100%);
+            animation: gradientBG 8s ease infinite;
+            background-size: 200% 200%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            animation: cardEntrance 1s ease;
+        }
+        
+        @keyframes cardEntrance {
+            from { 
+                transform: rotateY(90deg) translateY(50px);
+                opacity: 0;
+            }
+            to { 
+                transform: rotateY(0) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 25px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                      rgba(255,255,255,0) 0%, 
+                      rgba(255,255,255,0.3) 50%, 
+                      rgba(255,255,255,0) 100%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .login-form {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+            animation: slideIn 0.5s ease backwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .form-group:nth-child(1) { animation-delay: 0.2s; }
+        .form-group:nth-child(2) { animation-delay: 0.4s; }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--dark-gray);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--gray);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background-color: var(--yellow);
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 5px 15px rgba(255, 122, 0, 0.3);
+            transform: scale(1.02);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 0, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 122, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 0, 0); }
+        }
+        
+        .tests-container {
+            display: none;
+            padding: 20px;
+        }
+        
+        .branch-filter {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .science-btn {
+            background-color: var(--science-color);
+            color: white;
+        }
+        
+        .arts-btn {
+            background-color: var(--arts-color);
+            color: white;
+        }
+        
+        .all-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .test-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: right;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .test-btn.science {
+            background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+        }
+        
+        .test-btn.arts {
+            background: linear-gradient(135deg, #64B5F6 0%, #1E88E5 100%);
+        }
+        
+        .test-btn i {
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .alert-error {
+            background-color: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #EF9A9A;
+        }
+        
+        .alert-success {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #A5D6A7;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+            
+            .header {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            
+            .login-form {
+                padding: 20px;
+            }
+            
+            .tests-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
+            </div>
+            يلا اختبار
+        </div>
+        
+        <div class="login-form" id="loginForm">
+            <div class="alert alert-error" id="errorAlert">
+                <i class="fas fa-exclamation-circle"></i> رقم الهوية أو كلمة المرور غير صحيحة!
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="idNumber" placeholder=" " required>
+                <label for="idNumber">رقم الهوية</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="password" placeholder=" " required>
+                <label for="password">كلمة المرور</label>
+            </div>
+            
+            <button class="login-btn" id="loginBtn">
+                <span>دخول</span>
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        
+        <div class="tests-container" id="testsContainer">
+            <div class="alert alert-success" id="successAlert">
+                <i class="fas fa-check-circle"></i> تم تسجيل الدخول بنجاح! اختر الاختبار المطلوب:
+            </div>      
+            
+            
+            
+            <div class="tests-grid" id="testsGrid">
+                <!-- المواد العلمية -->
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>لغة عربية</span>
+                    <i class="fas fa-book-open"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>تربية إسلامية</span>
+                    <i class="fas fa-mosque"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>رياضيات علمي</span>
+                    <i class="fas fa-square-root-alt"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>لغة إنجليزية</span>
+                    <i class="fas fa-language"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>تكنولوجيا</span>
+                    <i class="fas fa-microchip"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>فيزياء</span>
+                    <i class="fas fa-atom"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>كيمياء</span>
+                    <i class="fas fa-flask"></i>
+                </a>
+                <a href="#" class="test-btn science" data-branch="science">
+                    <span>أحياء</span>
+                    <i class="fas fa-dna"></i>
+                </a>
+                
+                <!-- المواد الأدبية -->
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>لغة عربية 1</span>
+                    <i class="fas fa-book-open"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>لغة عربية 2</span>
+                    <i class="fas fa-pen-fancy"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>تربية إسلامية</span>
+                    <i class="fas fa-mosque"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>رياضيات أدبي</span>
+                    <i class="fas fa-calculator"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>لغة إنجليزية 1</span>
+                    <i class="fas fa-language"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>لغة إنجليزية 2</span>
+                    <i class="fas fa-spell-check"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>تكنولوجيا أدبي</span>
+                    <i class="fas fa-laptop-code"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>ثقافة علمية</span>
+                    <i class="fas fa-microscope"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>جغرافيا</span>
+                    <i class="fas fa-globe-asia"></i>
+                </a>
+                <a href="#" class="test-btn arts" data-branch="arts">
+                    <span>تاريخ</span>
+                    <i class="fas fa-landmark"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات المستخدمين المسجلين مع تحديد الفرع
+        const users = [
+            { id: "123456", password: "test123", branch: "science" },
+            { id: "654321", password: "yalatest", branch: "arts" },
+            { id: "111222", password: "student1", branch: "science" },
+            { id: "333444", password: "pass1234", branch: "arts" }
+        ];
+        
+        // عناصر DOM
+        const loginForm = document.getElementById('loginForm');
+        const testsContainer = document.getElementById('testsContainer');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const idNumberInput = document.getElementById('idNumber');
+        const passwordInput = document.getElementById('password');
+        const testButtons = document.querySelectorAll('.test-btn');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const testsGrid = document.getElementById('testsGrid');
+        
+        // تصفية الاختبارات حسب الفرع
+        function filterTests(branch) {
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === branch) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            testButtons.forEach(btn => {
+                if (branch === 'all' || btn.dataset.branch === branch) {
+                    btn.style.display = 'flex';
+                    gsap.to(btn, { opacity: 1, y: 0, duration: 0.3 });
+                } else {
+                    gsap.to(btn, { 
+                        opacity: 0, 
+                        y: 20, 
+                        duration: 0.3,
+                        onComplete: () => {
+                            btn.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        }
+        
+        // أحداث الفلترة
+        // filterButtons.forEach(btn => {
+        //     btn.addEventListener('click', () => {
+        //         filterTests(btn.dataset.filter);
+        //     });
+        // });
+        
+        // حدث النقر على زر الدخول
+        loginBtn.addEventListener('click', function() {
+            const idNumber = idNumberInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // التحقق من الحقول الفارغة
+            if (!idNumber || !password) {
+                showError("يرجى ملء جميع الحقول");
+                shakeInputs();
+                return;
+            }
+            
+            // البحث عن المستخدم
+            const user = users.find(u => u.id === idNumber && u.password === password);
+            
+            if (user) {
+                // تسجيل الدخول الناجح
+                loginSuccess(user.branch);
+            } else {
+                // فشل تسجيل الدخول
+                showError("رقم الهوية أو كلمة المرور غير صحيحة!");
+                shakeInputs();
+            }
+        });
+        
+        // عرض رسالة الخطأ
+        function showError(message) {
+            errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            errorAlert.style.display = 'block';
+            successAlert.style.display = 'none';
+        }
+        
+        // اهتزاز الحقول عند الخطأ
+        function shakeInputs() {
+            gsap.to([idNumberInput, passwordInput], {
+                x: [-5, 5, -5, 5, 0],
+                duration: 0.5,
+                ease: "power1.inOut"
+            });
+        }
+        
+        // تسجيل الدخول الناجح
+        function loginSuccess(userBranch) {
+            errorAlert.style.display = 'none';
+            successAlert.style.display = 'block';
+            
+            // إخفاء نموذج الدخول مع أنيميشن
+            gsap.to(loginForm, {
+                opacity: 0,
+                y: -50,
+                duration: 0.5,
+                ease: "power1.out",
+                onComplete: () => {
+                    loginForm.style.display = 'none';
+                    testsContainer.style.display = 'block';
+                    
+                    // فلترة تلقائية حسب فرع المستخدم
+                    filterTests(userBranch);
+                    
+                    // إظهار أزرار الاختبارات بتتابع
+                    gsap.to(testButtons, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.6,
+                        stagger: 0.1,
+                        ease: "back.out"
+                    });
+                }
+            });
+        }
+        
+        // تأثير الكتابة الآلي للشعار
+        const title = document.querySelector('.header');
+        const originalText = title.textContent.trim();
+        title.textContent = '';
+        
+        let i = 0;
+        function typeWriter() {
+            if (i < originalText.length) {
+                title.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 150);
+            } else {
+                // إضافة أيقونة بعد اكتمال الكتابة
+                title.innerHTML += ' <i class="fas fa-rocket" style="font-size: 1.2em;"></i>';
+            }
+        }
+        
+        // بدء تأثير الكتابة عند تحميل الصفحة
+        setTimeout(typeWriter, 500);
+    </script>
+</body>
+</html>

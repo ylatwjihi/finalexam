@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الاختبارات الإلكتروني - تكنولوجيا</title>
+    <style>
+        :root {
+            --primary-color: #3d6e6a; /* أخضر غامق بارد */
+            --secondary-color: #455A64; /* رمادي مزرق */
+            --light-color: #CFD8DC; /* رمادي فاتح */
+            --dark-color: #263238; /* أسود رمادي */
+            --correct-color: #4CAF50; /* أخضر للإجابات الصحيحة */
+            --wrong-color: #F44336; /* أحمر للإجابات الخاطئة */
+        }
+            
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .timer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            display: inline-block;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+        
+        .units-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .unit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .unit-btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quiz-section {
+            display: none;
+        }
+        
+        .quiz-section.active {
+            display: block;
+        }
+        
+        .question-part {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .question-part.active {
+            display: block;
+        }
+        
+        .question {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .question h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .option {
+            background-color: white;
+            border: 1px solid var(--light-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: var(--secondary-color);
+        }
+        
+        .option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .navigation-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-btn:disabled {
+            background-color: var(--light-color);
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        .submit-btn:hover {
+            background-color: #1B5E20;
+        }
+        
+        .results {
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .results h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-color);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .user-answer.correct {
+            color: var(--correct-color);
+        }
+        
+        .user-answer.wrong {
+            color: var(--wrong-color);
+        }
+        
+        .correct-answer {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+        
+        .time-taken {
+            text-align: center;
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .print-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .print-btn:hover {
+            background-color: #37474F;
+        }
+        
+        
+        /* أنماط قسم الإحصائيات العامة */
+        /* أنماط المخطط البياني */
+.overall-results {
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.overall-results-chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 200px; /* ارتفاع أدنى */
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .overall-results-chart-container {
+        min-height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .overall-results {
+        padding: 10px;
+    }
+    .overall-results-chart-container {
+        min-height: 150px;
+    }
+}
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .unit-btn, .timer, .nav-btn, .submit-btn, .print-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 50px;" id="subject-name">نظام الاختبارات الإلكتروني | التكنولوجيا</h1>
+        
+        <!-- قسم الإحصائيات العامة -->
+        <div class="overall-results" id="overall-results">
+            <h3>معدل جميع الاختبارات</h3>
+            <canvas id="overallResultsChart" style="max-width: 400px; margin: 0 auto;"></canvas>
+            <div id="overallResultsDetails" class="overall-stats"></div>
+        </div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="units-list" id="units-list">
+            <!-- سيتم ملء هذا القسم بالوحدات عبر JavaScript -->
+        </div>
+        
+        <div class="quiz-section" id="quiz-section">
+            <div class="question-part active" data-part="1">
+                <!-- سيتم ملء الأسئلة عبر JavaScript -->
+            </div>
+            
+            <div class="navigation-btns">
+                <button class="nav-btn" id="prev-btn" disabled>السابق</button>
+                <button class="nav-btn" id="next-btn">التالي</button>
+            </div>
+            
+            <button class="submit-btn" id="submit-btn">تسليم الإجابات</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>نتيجة الاختبار</h2>
+            <div class="score-display" id="score-display"></div>
+            <div class="time-taken" id="time-taken"></div>
+            <div id="results-content">
+                <!-- سيتم ملء النتائج هنا -->
+            </div>
+            <button class="print-btn" id="print-btn">تصدير النتيجة كملف PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة الرسم البياني للإحصائيات العامة
+            const overallChartCtx = document.getElementById('overallResultsChart').getContext('2d');
+            let overallChart = new Chart(overallChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['إجابات صحيحة', 'إجابات خاطئة'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#4CAF50', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // تحديث الإحصائيات العامة
+            function updateOverallResults() {
+                const allResults = JSON.parse(localStorage.getItem('quiz_results_techSc')) || [];
+                let totalCorrect = 0;
+                let totalQuestions = 0;
+
+                allResults.forEach(r => {
+                    totalCorrect += r.score;
+                    totalQuestions += r.total;
+                });
+
+                const overallPercentage = totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+                document.getElementById('overallResultsDetails').textContent = 
+                    `عدد الاختبارات: ${allResults.length} | المعدل العام: ${overallPercentage}%`;
+                
+                overallChart.data.datasets[0].data = [totalCorrect, totalQuestions - totalCorrect];
+                overallChart.update();
+            }
+
+            // تحديث الإحصائيات عند تحميل الصفحة
+            updateOverallResults();
+
+            // بيانات الاختبار
+            const subjectName = "تكنولوجيا - علمي";
+            const units = [
+                { id: 1, name: "اختبار شامل 1" },
+                { id: 2, name: "اختبار شامل 2" },
+            ];
+            
+            const quizzes = {
+                1: [
+            
+    {
+        "id": 1,
+        "question": "أي من التبويبات التالية يُستخدم عند إنشاء قاعدة بيانات جديدة في برنامج Access؟",
+        "options": ["إنشاء", "تصميم", "ملف", "أدوات قاعدة البيانات"],
+        "answer": "ملف"
+    },
+    {
+        "id": 2,
+        "question": "عند إنشاء قاعدة بيانات جديدة، ما المطلوب من المستخدم تحديده؟",
+        "options": [
+            "فتح ملف قاعدة بيانات تم حفظه مسبقاً",
+            "تحديد مكان تخزين ملف القاعدة فقط",
+            "تحديد اسم ملف القاعدة",
+            "تحديد اسم ملف القاعدة ومكان تخزينها معاً"
+        ],
+        "answer": "تحديد اسم ملف القاعدة ومكان تخزينها معاً"
+    },
+    {
+        "id": 3,
+        "question": "ما الخاصية المسؤولة عن ضمان التناسق بين المعلومات في قاعدة البيانات؟",
+        "options": ["إنشاء الجداول", "إنشاء التقارير", "إنشاء العلاقات", "إنشاء الاستعلامات"],
+        "answer": "إنشاء العلاقات"
+    },
+    {
+        "id": 4,
+        "question": "ما الأداة المناسبة لإدخال القيم عند تنفيذ التطبيق في برنامج App Inventor؟",
+        "options": ["button", "textbox", "label", "image"],
+        "answer": "textbox"
+    },
+    {
+        "id": 5,
+        "question": "أي من مكونات قاعدة البيانات يُستخدم للحصول على ملخصات من خارج القاعدة؟",
+        "options": ["الجداول", "الاستعلامات", "النماذج", "التقارير"],
+        "answer": "التقارير"
+    },
+    {
+        "id": 6,
+        "question": "ما التبويب المناسب لإنشاء مكون جديد في قاعدة البيانات؟",
+        "options": ["ملف", "تصميم", "إنشاء", "أدوات قاعدة البيانات"],
+        "answer": "إنشاء"
+    },
+    {
+        "id": 7,
+        "question": "ما الخاصية التي تتيح إخفاء التطبيقات بكلمة مرور في نظام iOS؟",
+        "options": ["الأمان", "القيود", "الرفع للتنبيه", "true tone"],
+        "answer": "القيود"
+    },
+    {
+        "id": 8,
+        "question": "أي من التالي لا يُعد من مميزات نظام Android؟",
+        "options": ["التمرير الذكي", "الاتصال المباشر", "الأمان", "التصوير المزدوج"],
+        "answer": "الأمان"
+    },
+    {
+        "id": 9,
+        "question": "ما الرابطة المنطقية المناسبة في Access لإضافة أكثر من شرط على أن يتحقق أحدها؟",
+        "options": ["NOT", "AND", "OR", "WHERE"],
+        "answer": "OR"
+    },
+    {
+        "id": 10,
+        "question": "في نموذج OSI، ما الطبقة المسؤولة عن تنسيق البيانات وتقديمها؟",
+        "options": ["طبقة النقل", "طبقة التطبيقات", "طبقة الجلسة", "طبقة التقديم"],
+        "answer": "طبقة التقديم"
+    },
+    {
+        "id": 11,
+        "question": "ما الجملة المناسبة لحذف جميع بيانات جدول project_tb؟",
+        "options": [
+            "delete all from project_tb ;",
+            "detete from * project_tb ;",
+            "detete * from project_tb ;",
+            "delete * set project_tb ;"
+        ],
+        "answer": "detete * from project_tb ;"
+    },
+    {
+        "id": 12,
+        "question": "أي جملة استعلام تُستخدم لحذف بيانات الطالب رقم 100 من جدول student؟",
+        "options": [
+            "delete stud-no=100 from student ;",
+            "delete * from student ;",
+            "delete from student set stud-no =100 ;",
+            "delete from student where stud-no =100 ;"
+        ],
+        "answer": "delete from student where stud-no =100 ;"
+    },
+    {
+        "id": 13,
+        "question": "ما الجملة الصحيحة لاسترجاع جميع الحقول من جدول employment مرتبة تصاعديًا حسب emp-pay؟",
+        "options": [
+            "select from * employment order by emp-pay ASC ;",
+            "select *from employment order by emp-pay ASC ;",
+            "select from orderby emp-pay ASC ;",
+            "select *from employment order by emp-pay DESC ;"
+        ],
+        "answer": "select *from employment order by emp-pay ASC ;"
+    },
+    {
+        "id": 14,
+        "question": "أي مما يلي لا يُعد من طرق نقل الملفات بين أجهزة Android؟",
+        "options": ["cloud storage", "icloud", "البريد الالكتروني", "البلوتوث"],
+        "answer": "icloud"
+    },
+    {
+        "id": 15,
+        "question": "ما نوع المفتاح المناسب إذا كانت الحقول (رقم الجلوس، السنة، الاسم...) ورقم الجلوس يتكرر سنويًا؟",
+        "options": ["رقم الجلوس فقط", "السنة فقط", "رقم الجلوس والسنة", "تاريخ الميلاد"],
+        "answer": "رقم الجلوس والسنة"
+    },
+    {
+        "id": 16,
+        "question": "أي من البرامج التالية يُستخدم لإنشاء واقع معزز؟",
+        "options": ["ACCESS", "AURASMA", "SQL", "APPINVENTOR"],
+        "answer": "AURASMA"
+    },
+    {
+        "id": 17,
+        "question": "أي من اللغات التالية تُستخدم في جميع برامج قواعد البيانات؟",
+        "options": ["Java", "C++", "Css", "SQL"],
+        "answer": "SQL"
+    },
+    {
+        "id": 18,
+        "question": "ما نوع البيانات الأنسب لتخزين تفاصيل زيارة مريض؟",
+        "options": ["رقم", "مذكرة", "تقرير", "نص"],
+        "answer": "مذكرة"
+    },
+    {
+        "id": 19,
+        "question": "ما التبويب الذي يُستخدم لإنشاء جدول جديد في Access؟",
+        "options": ["أدوات قاعدة البيانات", "إنشاء", "تصميم", "ملف"],
+        "answer": "إنشاء"
+    },
+    {
+        "id": 20,
+        "question": "ما الحد الأقصى لحجم ملف قاعدة البيانات في Access؟",
+        "options": ["2B", "20 GB", "2 GB", "2 MB"],
+        "answer": "2 GB"
+    },
+    {
+        "id": 21,
+        "question": "ما الاستعلام المناسب لإظهار جميع البيانات من جدول project؟",
+        "options": [
+            "select from * project ;",
+            "select * from project ;",
+            "delete from project ;",
+            "select all from project ;"
+        ],
+        "answer": "select * from project ;"
+    },
+    {
+        "id": 22,
+        "question": "ما ميزة نظام Android التي تتيح تشغيل الكاميرا الأمامية والخلفية معًا؟",
+        "options": ["الإطار المتعدد", "التصوير المزدوج", "التصوير المتعدد", "التصوير بتقنية 360"],
+        "answer": "التصوير المزدوج"
+    },
+    {
+        "id": 23,
+        "question": "ما الجملة المناسبة لتحديث اسم الطالب إلى 'ahmed' بالاعتماد على رقمه؟",
+        "options": [
+            "update student_tb set stud-no=[ادخل الرقم] where stud-name = \"ahmed\" ;",
+            "update student_tb set stud-name = \"ahmed\" values stud-no = [أدخل الرقم] ;",
+            "insert into student_tb (stud-no , stud-name ) vlaues ( 10 , \"ahmed\" ) ;",
+            "update student_tb set stud-name = \"ahmed\" where stud-no = [ أدخل الرقم] ;"
+        ],
+        "answer": "update student_tb set stud-name = \"ahmed\" where stud-no = [ أدخل الرقم] ;"
+    },
+    {
+        "id": 24,
+        "question": "ما طريقة الإدخال المناسبة لإضافة سجل جديد في جدول student؟",
+        "options": [
+            "insert into student (name , b-date, address ) values (\"ali\" , #1/1/2000#, \"gaza\" );",
+            "insert into student (id, name , b-date, address ) values (14, \"ali\" , #1/1/2000#, \"gaza\" );",
+            "insert into student (id, name , b-date, address ) values (\"ali\",14 , #1/1/2000#, \"gaza\" );",
+            "insert into student (id, name , b-date, address ) values (14, ali , 1/1/2000 , gaza);"
+        ],
+        "answer": "insert into student (id, name , b-date, address ) values (14, \"ali\" , #1/1/2000#, \"gaza\" );"
+    },
+    {
+        "id": 25,
+        "question": "ما البروتوكول المستخدم في نقل الملفات؟",
+        "options": ["ASP", "NDR", "FTP", "SMTP"],
+        "answer": "FTP"
+    },
+    {
+        "id": 26,
+        "question": "أي من الأدوات التالية لا تتبع مجموعة User Interface؟",
+        "options": ["image", "Tabel Arrangment", "label", "text box"],
+        "answer": "Tabel Arrangment"
+    },
+    {
+        "id": 27,
+        "question": "في App Inventor، ما الأداة المستخدمة لعنونة مربعات النص؟",
+        "options": ["label", "text box", "button", "image"],
+        "answer": "label"
+    },
+    {
+        "id": 28,
+        "question": "أي من اللبنات البرمجية تُستخدم للإعلان عن متغير في App Inventor؟",
+        "options": ["أ-", "ب-", "ج-", "د-"],
+        "answer": "ب-"
+    },
+    {
+        "id": 29,
+        "question": "في App Inventor، ما المجموعة التي تنتمي لها لبنة math؟",
+        "options": ["control", "math", "text", "variables"],
+        "answer": "math"
+    },
+    {
+        "id": 30,
+        "question": "أي من الطبقات الآتية في نموذج OSI تعمل على تشكيل بروتوكولات التشفير؟",
+        "options": ["طبقة الجلسة", "طبقة النقل", "طبقة التطبيقات", "طبقة التقديم"],
+        "answer": "طبقة التقديم"
+    },
+    {
+        "id": 31,
+        "question": "ما الجملة المناسبة لإضافة سجل جديد في جدول قاعدة بيانات؟",
+        "options": ["delete", "select", "insert into", "update"],
+        "answer": "insert into"
+    },
+    {
+        "id": 32,
+        "question": "في Access، ما الخاصية التي تُستخدم لإعطاء حقل اسم مستعار داخل الاستعلام؟",
+        "options": ["AS", "SELECT", "FROM", "WHERE"],
+        "answer": "AS"
+    },
+    {
+        "id": 33,
+        "question": "ما الطبقة المسؤولة عن عنونة المنافذ في نموذج OSI؟",
+        "options": ["طبقة الجلسة", "طبقة التقديم", "طبقة التطبيقات", "طبقة النقل"],
+        "answer": "طبقة النقل"
+    },
+    {
+        "id": 34,
+        "question": "ما اسم التقنية التي تربط بين العناصر الواقعية والمجسمات الرقمية؟",
+        "options": ["الواقع الافتراضي", "الواقع المعزز", "التصوير المزدوج", "360 تصوير"],
+        "answer": "الواقع المعزز"
+    },
+    {
+        "id": 35,
+        "question": "أي من اللبنات التالية يُستخدم لإخراج نتيجة إلى شاشة التطبيق في App Inventor؟",
+        "options": ["أ-", "ب-", "ج-", "د-"],
+        "answer": "د-"
+    },
+    {
+        "id": 36,
+        "question": "أي من الأدوات التالية تُستخدم لضبط الصفوف والأعمدة في واجهة التطبيق؟",
+        "options": ["label", "Horizotal Arrangment", "Tabel Arrangment", "button"],
+        "answer": "Tabel Arrangment"
+    },
+    {
+        "id": 37,
+        "question": "ما هي الطبقة الأعلى في نموذج OSI؟",
+        "options": ["طبقة الجلسة", "طبقة النقل", "طبقة التطبيقات", "طبقة التقديم"],
+        "answer": "طبقة التطبيقات"
+    },
+    {
+        "id": 38,
+        "question": "ما البرتوكول الذي يُستخدم في طبقة الجلسة في نموذج OSI؟",
+        "options": ["ASP", "NDR", "FTP", "SMTP"],
+        "answer": "SMTP"
+    },
+    {
+        "id": 39,
+        "question": "أي من الأدوات التالية تُستخدم للمقارنة بين قيمتين في App Inventor؟",
+        "options": ["المساواة", "المقارنة", "اتخاذ القرار", "تعريف متغيرين"],
+        "answer": "المقارنة"
+    },
+    {
+        "id": 40,
+        "question": "أي من المهارات التالية تُعد من مهارات تطوير الويب؟",
+        "options": ["C++", "Java", "Html5 , Css", "Swift"],
+        "answer": "Html5 , Css"
+    },
+],
+
+2: [
+    {
+        "id": 1,
+        "question": "أي من أنواع البيانات التالية في Access يُستخدم لتخزين نص طويل يزيد عن 255 حرفًا؟",
+        "options": ["text نص", "memo مذكرة", "number رقم", "Date/Time تاريخ وقت"],
+        "answer": "memo مذكرة"
+    },
+    {
+        "id": 2,
+        "question": "ما التبويب المناسب لإنشاء علاقات بين الجداول في برنامج Access؟",
+        "options": ["تبويب تصميم", "تبويب إنشاء", "تبويب أدوات قاعدة البيانات", "تبويب ملف"],
+        "answer": "تبويب أدوات قاعدة البيانات"
+    },
+    {
+        "id": 3,
+        "question": "ما البروتوكول المستخدم في طبقة التقديم ضمن نموذج OSI؟",
+        "options": ["ASP", "NDR", "FTP", "SMTP"],
+        "answer": "NDR"
+    },
+    {
+        "id": 4,
+        "question": "أي من التطبيقات التالية يُستخدم لإنشاء محتوى واقع معزز تعليمي؟",
+        "options": ["ACCESS", "APP INVENTOR", "AURASMA", "JAVA"],
+        "answer": "AURASMA"
+    },
+    {
+        "id": 5,
+        "question": "ما اسم الدالة التي تُستخدم لإيجاد عدد السجلات في جدول داخل Access؟",
+        "options": ["SUM", "MAX", "COUNT", "MIN"],
+        "answer": "COUNT"
+    },
+    {
+        "id": 6,
+        "question": "في برنامج Access، ما معنى الرمز المنطقي <> ؟",
+        "options": ["يساوي", "لا يساوي", "أكبر من", "أصغر من أو يساوي"],
+        "answer": "لا يساوي"
+    },
+    {
+        "id": 7,
+        "question": "أي من الحساسات التالية يُستخدم لاستشعار المجال المغناطيسي في الأجهزة الذكية؟",
+        "options": ["الدوران", "التسارع", "المغناطيسية", "الجاذبية"],
+        "answer": "المغناطيسية"
+    },
+    {
+    "id": 8,
+    "question": "ما ناتج تنفيذ الكود الموضح في الصورة؟",
+    "options": ["19", "9.5", "4.3", "4"],
+    "answer": "4",
+    "image": "img/tech2-1.png"
+},
+    {
+        "id": 9,
+        "question": "أي من الحساسات التالية يُستخدم لقياس تغير السرعة باتجاه المحاور الثلاثة؟",
+        "options": ["الدوران", "التسارع", "المغناطيسية", "الجاذبية"],
+        "answer": "التسارع"
+    },
+    {
+        "id": 10,
+        "question": "ما نوع العلاقة الأنسب الموضحة بين المريض والغرفة في الرسم التالي؟",
+        "options": ["واحد لواحد", "واحد لمتعدد", "متعدد لمتعدد", "لا علاقة"],
+        "answer": "متعدد لمتعدد",
+        "image": "img/tech2-3.png"
+    },
+    {
+        "id": 11,
+        "question": "في App Inventor، ما الخاصية المستخدمة لتغيير صورة عنصر؟",
+        "options": ["background image", "picture", "background color", "text"],
+        "answer": "picture"
+    },
+    {
+        "id": 12,
+        "question": "أي طبقة من طبقات OSI مسؤولة عن ضغط البيانات وتنسيقها؟",
+        "options": ["التطبيقات", "النقل", "الجلسة", "التقديم"],
+        "answer": "التقديم"
+    },
+    {
+        "id": 13,
+        "question": "ما المفتاح المناسب إذا كان رقم الجلوس يتكرر كل سنة؟",
+        "options": ["رقم الجلوس فقط", "السنة فقط", "رقم الجلوس والسنة", "الاسم"],
+        "answer": "رقم الجلوس والسنة"
+    },
+    {
+        "id": 14,
+        "question": "أي من التقنيات التالية تدمج الكائنات الافتراضية بالواقع الحقيقي؟",
+        "options": ["الواقع الافتراضي", "الواقع المعزز", "ألعاب الفيديو", "تقنية 360°"],
+        "answer": "الواقع المعزز"
+    },
+    {
+        "id": 15,
+        "question": "ما نوع العملية الظاهرة في اللبنات التالية؟",
+        "options": ["إهمال الجزء العشري", "الجذر التربيعي", "مربع العدد", "التقريب"],
+        "answer": "الجذر التربيعي",
+        "image": "img/tech2-2.png"
+    },
+    {
+        "id": 16,
+        "question": "من أي مجموعة تُضاف أداة 'Horizontal Arrangement' في App Inventor؟",
+        "options": ["user interface", "layout", "media", "animation"],
+        "answer": "layout"
+    },
+    {
+        "id": 17,
+        "question": "أي من الأدوات التالية تُستخدم في App Inventor لإظهار النتائج؟",
+        "options": ["label", "textbox", "button", "image"],
+        "answer": "label"
+    },
+    {
+        "id": 18,
+        "question": "ما البروتوكول المخصص لنقل الملفات في الشبكات؟",
+        "options": ["SMTP", "FTP", "NDR", "ASP"],
+        "answer": "FTP"
+    },
+    {
+        "id": 19,
+        "question": "أي لبنة تُستخدم في App Inventor لتعريف متغير؟",
+        "options": ["أ-", "ب-", "ج-", "د-"],
+        "answer": "ب-"
+    },
+    {
+        "id": 20,
+        "question": "أي من الحقول التالية لا يمكن تكراره في جدول؟",
+        "options": ["حقل عادي", "مفتاح أساسي", "حقل نصي", "حقل رقمي"],
+        "answer": "مفتاح أساسي"
+    },
+    {
+        "id": 21,
+        "question": "أي من الجمل التالية تستخدم لإدخال سجل جديد في جدول؟",
+        "options": ["delete", "insert into", "update", "select"],
+        "answer": "insert into"
+    },
+    {
+        "id": 22,
+        "question": "ما أداة App Inventor المسؤولة عن تنظيم المكونات أفقياً؟",
+        "options": ["Tabel Arrangement", "label", "Horizontal Arrangement", "text box"],
+        "answer": "Horizontal Arrangement"
+    },
+    {
+        "id": 23,
+        "question": "في App Inventor، أي من اللبنات البرمجية تُستخدم لإهمال الجزء العشري؟",
+        "options": ["أ-", "ب-", "ج-", "د-"],
+        "answer": "د-"
+    },
+    {
+        "id": 24,
+        "question": "في Access، ما معنى استخدام الكلمة المفتاحية 'DESC' في نهاية الاستعلام؟",
+        "options": [
+            "فرز تنازلي حسب الحقل المحدد",
+            "فرز تصاعدي تلقائي",
+            "تصفية حسب المفتاح الأجنبي",
+            "ترتيب حسب رقم الصف"
+        ],
+        "answer": "فرز تنازلي حسب الحقل المحدد"
+    },
+    {
+        "id": 25,
+        "question": "ما نوع التخاطب الذي يسمح بإرسال البيانات في اتجاه واحد فقط في نفس الوقت؟",
+        "options": [
+            "Full Duplex",
+            "Half Duplex",
+            "Simplex",
+            "Multi Channel"
+        ],
+        "answer": "Half Duplex"
+    },
+    {
+        "id": 26,
+        "question": "أي من الجمل التالية تُستخدم لفرز السجلات في Access تصاعدياً؟",
+        "options": [
+            "ORDER BY field DESC",
+            "ORDER BY field ASC",
+            "SELECT * FROM table WHERE ASC",
+            "DELETE FROM table ORDER BY field"
+        ],
+        "answer": "ORDER BY field ASC"
+    },
+    {
+        "id": 27,
+        "question": "ما المجس الذي يحدد اتجاه الجاذبية بالنسبة للجهاز؟",
+        "options": ["التسارع", "الجاذبية", "الدوران", "المغناطيسية"],
+        "answer": "الجاذبية"
+    },
+    {
+        "id": 28,
+        "question": "في App Inventor، ما المجموعة التي تنتمي إليها أداة label؟",
+        "options": ["control", "math", "text", "user interface"],
+        "answer": "user interface"
+    },
+    {
+        "id": 29,
+        "question": "ما اسم الطبقة في نموذج OSI المسؤولة عن ضبط الجلسات بين التطبيقات؟",
+        "options": ["طبقة التطبيقات", "طبقة الجلسة", "طبقة النقل", "طبقة التقديم"],
+        "answer": "طبقة الجلسة"
+    },
+    {
+        "id": 30,
+        "question": "أي من الخيارات التالية يُعد ميزة من مميزات HTML5 و CSS؟",
+        "options": ["لغة برمجة", "مهارات تطوير الويب", "نظام تشغيل", "لغة لتطبيقات الهاتف"],
+        "answer": "مهارات تطوير الويب"
+    },
+    {
+        "id": 31,
+        "question": "أي الأوامر التالية تُستخدم لحذف سجل بناءً على شرط في Access؟",
+        "options": [
+            "DELETE * FROM table",
+            "DELETE FROM table WHERE condition",
+            "UPDATE FROM table",
+            "DROP TABLE"
+        ],
+        "answer": "DELETE FROM table WHERE condition"
+    },
+    {
+        "id": 32,
+        "question": "ما هي الفائدة من استخدام GROUP BY في الاستعلامات؟",
+        "options": [
+            "لترتيب النتائج",
+            "لتصفية القيم المكررة",
+            "لتجميع النتائج حسب قيمة معينة",
+            "لإضافة شروط فلترة"
+        ],
+        "answer": "لتجميع النتائج حسب قيمة معينة"
+    },
+    {
+        "id": 33,
+        "question": "أي من اللبنات التالية تُستخدم للمقارنة بين قيمتين؟",
+        "options": ["لبنة الطباعة", "لبنة الجمع", "لبنة المساواة", "لبنة الإخراج"],
+        "answer": "لبنة المساواة"
+    },
+    {
+        "id": 34,
+        "question": "ما الطبقة في نموذج OSI المسؤولة عن تقسيم البيانات إلى أجزاء (Segments)؟",
+        "options": ["طبقة التقديم", "طبقة الجلسة", "طبقة النقل", "طبقة التطبيقات"],
+        "answer": "طبقة النقل"
+    },
+    {
+        "id": 35,
+        "question": "ما التطبيق الذي يستخدم كاميرا الجهاز لعرض عناصر افتراضية في بيئة واقعية؟",
+        "options": ["Java", "Access", "App Inventor", "Aurasma"],
+        "answer": "Aurasma"
+    },
+    {
+        "id": 36,
+        "question": "أي من الجمل التالية تُستخدم لتحديث قيمة في حقل معين؟",
+        "options": [
+            "UPDATE table SET field = value WHERE condition",
+            "DELETE FROM table WHERE condition",
+            "SELECT field FROM table",
+            "INSERT INTO table VALUES (...)"
+        ],
+        "answer": "UPDATE table SET field = value WHERE condition"
+    },
+    {
+        "id": 37,
+        "question": "ما نوع البيانات الأنسب لتخزين تاريخ ميلاد في جدول طالب؟",
+        "options": ["text", "number", "memo", "Date/Time"],
+        "answer": "Date/Time"
+    },
+    {
+        "id": 38,
+        "question": "في App Inventor، ما المجموعة التي تنتمي إليها اللبنات الرياضية؟",
+        "options": ["control", "math", "text", "logic"],
+        "answer": "math"
+    },
+    {
+        "id": 39,
+        "question": "أي من التالي يُعتبر من برامج قواعد البيانات المجانية؟",
+        "options": ["MS Access", "Oracle", "MySQL", "SQL Server"],
+        "answer": "MySQL"
+    },
+    {
+        "id": 40,
+        "question": "في Access، أي عرض يُستخدم لتعديل تصميم الجداول؟",
+        "options": ["عرض التخطيط", "عرض الجدول", "عرض البيانات", "عرض التصميم"],
+        "answer": "عرض التصميم"
+    }
+]
+
+
+                
+
+
+            };
+            
+            // تعيين اسم المادة
+            document.getElementById('subject-name').textContent = `اختبار ${subjectName}`;
+            
+            // إنشاء قائمة الوحدات
+            const unitsList = document.getElementById('units-list');
+            units.forEach(unit => {
+                const unitBtn = document.createElement('button');
+                unitBtn.className = 'unit-btn';
+                unitBtn.textContent = unit.name;
+                unitBtn.dataset.unitId = unit.id;
+                unitBtn.addEventListener('click', () => startQuiz(unit.id));
+                unitsList.appendChild(unitBtn);
+            });
+            
+            // متغيرات النظام
+            let currentUnit = null;
+            let currentPart = 1;
+            let totalParts = 0;
+            let userAnswers = {};
+            let timerInterval = null;
+            let startTime = null;
+            let timeLeft = localStorage.getItem('quiz_time_left') ? parseInt(localStorage.getItem('quiz_time_left')) : 3600; // 30 دقيقة بالثواني
+            
+            // عناصر واجهة المستخدم
+            const quizSection = document.getElementById('quiz-section');
+            const resultsSection = document.getElementById('results');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const printBtn = document.getElementById('print-btn');
+            
+            // بدء المؤقت
+            function startTimer() {
+                startTime = Date.now();
+                updateTimerDisplay();
+                timerInterval = setInterval(updateTimer, 1000);
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+            }
+            
+            // تحديث المؤقت
+            function updateTimer() {
+                timeLeft--;
+                updateTimerDisplay();
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }
+            
+            // تحديث عرض المؤقت
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بدء الاختبار
+            function startQuiz(unitId) {
+                document.getElementById('overall-results').style.display = 'none';
+
+                currentUnit = unitId;
+                userAnswers = {};
+                currentPart = 1;
+                
+                // إخفاء قائمة الوحدات
+                unitsList.style.display = 'none';
+                
+                // عرض قسم الاختبار
+                quizSection.style.display = 'block';
+                quizSection.classList.add('active');
+                
+                // إعداد الأسئلة
+                setupQuestions(unitId);
+                
+                // بدء المؤقت
+                if (!timerInterval) {
+                    startTimer();
+                }
+            }
+            
+            // إعداد الأسئلة
+            function setupQuestions(unitId) {
+                const questions = quizzes[unitId];
+                totalParts = Math.ceil(questions.length / 3);
+                
+                // مسح الأقسام السابقة
+                const quizSection = document.getElementById('quiz-section');
+                const existingParts = quizSection.querySelectorAll('.question-part');
+                existingParts.forEach(part => {
+                    if (!part.classList.contains('active')) {
+                        part.remove();
+                    }
+                });
+                
+                // إنشاء أقسام جديدة
+                for (let i = 1; i <= totalParts; i++) {
+                    if (i === 1) continue; // تخطي القسم الأول الموجود بالفعل
+                    
+                    const partDiv = document.createElement('div');
+                    partDiv.className = 'question-part';
+                    partDiv.dataset.part = i;
+                    quizSection.insertBefore(partDiv, document.querySelector('.navigation-btns'));
+                }
+                
+                // تعبئة الأسئلة في الأقسام
+                questions.forEach((question, index) => {
+                    const partNumber = Math.floor(index / 3) + 1;
+                    const partDiv = document.querySelector(`.question-part[data-part="${partNumber}"]`);
+                    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.dataset.questionId = question.id;
+                    
+                    const questionTitle = document.createElement('h3');
+                    questionTitle.textContent = `السؤال ${index + 1}: ${question.question}`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options';
+                    
+                    question.options.forEach((option, optIndex) => {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'option';
+                        optionDiv.textContent = option;
+                        optionDiv.dataset.option = option;
+                        
+                        optionDiv.addEventListener('click', function() {
+                            // إزالة التحديد من جميع الخيارات لهذا السؤال
+                            const allOptions = this.parentElement.querySelectorAll('.option');
+                            allOptions.forEach(opt => opt.classList.remove('selected'));
+                            
+                            // تحديد الخيار الحالي
+                            this.classList.add('selected');
+                            
+                            // حفظ الإجابة
+                            userAnswers[question.id] = option;
+                        });
+                        
+                        optionsDiv.appendChild(optionDiv);
+                    });
+                    
+                    questionDiv.appendChild(questionTitle);
+                    questionDiv.appendChild(optionsDiv);
+                    partDiv.appendChild(questionDiv);
+                });
+                
+                // عرض القسم الأول
+                showPart(1);
+            }
+            
+            // عرض قسم معين
+            function showPart(partNumber) {
+                // إخفاء جميع الأقسام
+                document.querySelectorAll('.question-part').forEach(part => {
+                    part.classList.remove('active');
+                });
+                
+                // عرض القسم المطلوب
+                document.querySelector(`.question-part[data-part="${partNumber}"]`).classList.add('active');
+                
+                // تحديث أزرار التنقل
+                prevBtn.disabled = partNumber === 1;
+                nextBtn.disabled = partNumber === totalParts;
+                
+                // تحديث الإجابات المحددة مسبقاً
+                const currentPartQuestions = document.querySelectorAll(`.question-part[data-part="${partNumber}"] .question`);
+                currentPartQuestions.forEach(questionDiv => {
+                    const questionId = parseInt(questionDiv.dataset.questionId);
+                    if (userAnswers[questionId]) {
+                        const options = questionDiv.querySelectorAll('.option');
+                        options.forEach(option => {
+                            if (option.dataset.option === userAnswers[questionId]) {
+                                option.classList.add('selected');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // تقديم الاختبار
+            function submitQuiz() {
+                clearInterval(timerInterval);
+                localStorage.removeItem('quiz_time_left');
+                
+                // إخفاء قسم الاختبار
+                quizSection.style.display = 'none';
+                
+                // عرض النتائج
+                showResults();
+            }
+            
+            // عرض النتائج
+            function showResults() {
+                // إظهار قسم الإحصائيات بعد التسليم
+document.getElementById('overall-results').style.display = 'block';
+                const questions = quizzes[currentUnit];
+                let correctCount = 0;
+                const resultsContent = document.getElementById('results-content');
+                resultsContent.innerHTML = '';
+                
+                // حساب النتائج
+                questions.forEach(question => {
+                    const isCorrect = userAnswers[question.id] === question.answer;
+                    if (isCorrect) correctCount++;
+                    
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const resultQuestion = document.createElement('div');
+                    resultQuestion.className = 'result-question';
+                    resultQuestion.textContent = question.question;
+                    
+                    const userAnswerDiv = document.createElement('div');
+                    userAnswerDiv.className = `user-answer ${isCorrect ? 'correct' : 'wrong'}`;
+                    userAnswerDiv.textContent = `إجابتك: ${userAnswers[question.id] || 'لم يتم الإجابة'}`;
+                    
+                    const correctAnswerDiv = document.createElement('div');
+                    correctAnswerDiv.className = 'correct-answer';
+                    correctAnswerDiv.textContent = `الإجابة الصحيحة: ${question.answer}`;
+                    
+                    resultItem.appendChild(resultQuestion);
+                    resultItem.appendChild(userAnswerDiv);
+                    resultItem.appendChild(correctAnswerDiv);
+                    resultsContent.appendChild(resultItem);
+                });
+                
+                // عرض النتيجة النهائية
+                const scorePercentage = Math.round((correctCount / questions.length) * 100);
+                document.getElementById('score-display').textContent = `علامتك: ${correctCount} من ${questions.length} (${scorePercentage}%)`;
+                
+                // حساب الوقت المستغرق
+                const timeSpent = 3600 - timeLeft;
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                document.getElementById('time-taken').textContent = `الوقت المستغرق: ${minutes} دقائق و ${seconds} ثواني`;
+                
+                // حفظ النتيجة
+                const resultData = {
+                    unit: currentUnit,
+                    score: correctCount,
+                    total: questions.length,
+                    percentage: scorePercentage,
+                    timeSpent: `${minutes} دقائق و ${seconds} ثواني`
+                };
+                
+                // حفظ جميع النتائج
+                let allResults = JSON.parse(localStorage.getItem('quiz_results_all')) || [];
+                allResults.push(resultData);
+                localStorage.setItem('quiz_results_techSc', JSON.stringify(allResults));
+                
+                // تحديث الإحصائيات العامة
+                updateOverallResults();
+                
+                // عرض قسم النتائج
+                resultsSection.style.display = 'block';
+                saveQuizResult(correctCount, questions.length, `${minutes} دقائق و ${seconds} ثواني`);
+
+            }
+            
+            // أحداث الأزرار
+            prevBtn.addEventListener('click', function() {
+                if (currentPart > 1) {
+                    currentPart--;
+                    showPart(currentPart);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentPart < totalParts) {
+                    currentPart++;
+                    showPart(currentPart);
+                }
+            });
+            
+            submitBtn.addEventListener('click', submitQuiz);
+            
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // استعادة المؤقت إذا كان هناك اختبار جاري
+            if (localStorage.getItem('quiz_time_left')) {
+                updateTimerDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

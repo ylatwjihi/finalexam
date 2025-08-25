@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الاختبارات الإلكتروني - اللغة الانجليزية</title>
+    <style>
+        :root {
+            --primary-color: #3d6e6a; /* أخضر غامق بارد */
+            --secondary-color: #455A64; /* رمادي مزرق */
+            --light-color: #CFD8DC; /* رمادي فاتح */
+            --dark-color: #263238; /* أسود رمادي */
+            --correct-color: #329d62; /* أخضر للإجابات الصحيحة */
+            --wrong-color: #F44336; /* أحمر للإجابات الخاطئة */
+        }
+            
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .timer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            display: inline-block;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+        
+        .units-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .unit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .unit-btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quiz-section {
+            display: none;
+        }
+        
+        .quiz-section.active {
+            display: block;
+        }
+        
+        .question-part {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .question-part.active {
+            display: block;
+        }
+        
+        .question {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .question h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .option {
+            background-color: white;
+            border: 1px solid var(--light-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: var(--secondary-color);
+        }
+        
+        .option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .navigation-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-btn:disabled {
+            background-color: var(--light-color);
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        .submit-btn:hover {
+            background-color: #1B5E20;
+        }
+        
+        .results {
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .results h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-color);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .user-answer.correct {
+            color: var(--correct-color);
+        }
+        
+        .user-answer.wrong {
+            color: var(--wrong-color);
+        }
+        
+        .correct-answer {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+        
+        .time-taken {
+            text-align: center;
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .print-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .print-btn:hover {
+            background-color: #37474F;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: block;
+        }
+        
+        .image-note {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .unit-btn, .timer, .nav-btn, .submit-btn, .print-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 50px;" id="subject-name">نظام الاختبارات الإلكتروني | الانجليزية</h1>
+      <!-- 🔷 قسم عرض إحصائيات المادة -->
+<div class="overall-results" id="overall-results-box">
+  <h3>📊 معدل المادة</h3>
+  <canvas id="overallResultsChart"></canvas>
+  <div id="overallResultsDetails" class="overall-stats"></div>
+</div>
+
+<!-- 🔷 مكتبة الرسم البياني -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- 🔷 تنسيقات عرض الإحصائيات -->
+<style>
+  .overall-results {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+  #overallResultsChart {
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+  .overall-stats {
+    font-weight: bold;
+    color: #3d6e6a;
+  }
+</style>
+
+<!-- 🔷 سكربت عرض وتخزين الإحصائيات -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 🟨 غيّر هذا المفتاح حسب اسم المادة
+    const subjectKey = 'english'; // مثال: math, english, deen...
+
+    const ctx = document.getElementById('overallResultsChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['إجابات صحيحة', 'إجابات خاطئة'],
+        datasets: [{
+          data: [0, 0],
+          backgroundColor: ['#4CAF50', '#F44336']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    function updateOverallResults() {
+      const allResults = JSON.parse(localStorage.getItem('quiz_results_english' + subjectKey)) || [];
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+
+      allResults.forEach(r => {
+        totalCorrect += r.score;
+        totalQuestions += r.total;
+      });
+
+      const percent = totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+      document.getElementById('overallResultsDetails').textContent =
+        `عدد المحاولات: ${allResults.length} | المعدل العام: ${percent}%`;
+
+      chart.data.datasets[0].data = [totalCorrect, totalQuestions - totalCorrect];
+      chart.update();
+    }
+
+    // نداء مباشر عند تحميل الصفحة
+    updateOverallResults();
+
+    // 🔁 استدعِ هذه الدالة عند تسليم الاختبار لتخزين النتيجة
+    window.saveQuizResult = function(score, total, timeSpentText = '') {
+      let allResults = JSON.parse(localStorage.getItem('quiz_results_english' + subjectKey)) || [];
+      allResults.push({
+        score: score,
+        total: total,
+        percentage: Math.round((score / total) * 100),
+        timeSpent: timeSpentText
+      });
+      localStorage.setItem('quiz_results_english' + subjectKey, JSON.stringify(allResults));
+      updateOverallResults();
+    };
+  });
+</script>
+
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="units-list" id="units-list">
+            <!-- سيتم ملء هذا القسم بالوحدات عبر JavaScript -->
+        </div>
+        
+        <div class="quiz-section" id="quiz-section">
+            <div class="question-part active" data-part="1">
+                <!-- سيتم ملء الأسئلة عبر JavaScript -->
+            </div>
+            
+            <div class="navigation-btns">
+                <button class="nav-btn" id="prev-btn" disabled>السابق</button>
+                <button class="nav-btn" id="next-btn">التالي</button>
+            </div>
+            
+            <button class="submit-btn" id="submit-btn">تسليم الإجابات</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>نتيجة الاختبار</h2>
+            <div class="score-display" id="score-display"></div>
+            <div class="time-taken" id="time-taken"></div>
+            <div id="results-content">
+                <!-- سيتم ملء النتائج هنا -->
+            </div>
+            <button class="print-btn" id="print-btn">تصدير النتيجة كملف PDF</button>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الاختبارات
+       const quizzes = {
+    1: [
+        {
+            id: 1,
+            question: "What did Arafat carry in his hands during his speech?",
+            options: ["A peace treaty and a flag", "An olive branch and a gun.", "A book and a pen", "A key and a map"],
+            answer: "An olive branch and a gun.",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 2,
+            question: "How many Palestinians were displaced after the 1948 disaster?",
+            options: ["200,000", "500,000", "700,000", "1,000,000"],
+            answer: "700,000",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 3,
+            question: "What does the olive branch symbolize in Arafat’s speech?",
+            options: ["Religion", "Resistance", "War", "Peace"],
+            answer: "Peace",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 4,
+            question: "What was the purpose of Arafat’s speech?",
+            options: ["To announce a new war", "To declare independence", "To call for peace and recognition", "To criticize the UN"],
+            answer: "To call for peace and recognition",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 5,
+            question: "According to the passage, what had the Palestinian cause received for many years?",
+            options: ["Strong support", "Little attention", "Military aid", "Full recognition"],
+            answer: "Little attention",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 6,
+            question: "Which organization voted to upgrade Palestine's status in 2012?",
+            options: ["NATO", "UNESCO", "United Nations General Assembly", "Arab League"],
+            answer: "United Nations General Assembly",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 7,
+            question: "What title was Palestine given by the UN in 2012?",
+            options: ["Full Member State", "Observer State", "Non-member observer state", "Refugee Nation"],
+            answer: "Non-member observer state",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 8,
+            question: "What was one result of Arafat’s speech?",
+            options: ["War broke out again", "Palestine was granted independence immediately", "It showed the cause would not be forgotten", "The UN expelled Israel"],
+            answer: "It showed the cause would not be forgotten",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 9,
+            question: "What emotion did Arafat’s words bring to Palestinians?",
+            options: ["Confusion", "Anger", "Inspiration", "Disappointment"],
+            answer: "Inspiration",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 10,
+            question: "What does the passage suggest about the struggle after Arafat’s speech?",
+            options: ["It ended quickly", "It had many challenges", "It led to war", "It was ignored"],
+            answer: "It had many challenges",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 11,
+            question: "What is one reason for optimism according to the passage?",
+            options: ["Decline of Palestinian leadership", "Increase in emigration", "Recognition by more countries", "Decrease in speeches"],
+            answer: "Recognition by more countries",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 12,
+            question: "What was the purpose of building bridges between Palestine and the West?",
+            options: ["To increase trade", "To reduce refugees", "To promote understanding and peace", "To start negotiations for war"],
+            answer: "To promote understanding and peace",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 13,
+            question: "What does “Diaspora” refer to in the passage?",
+            options: ["A military group", "Refugees returning home", "Palestinians forced to live abroad", "A type of negotiation"],
+            answer: "Palestinians forced to live abroad",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 14,
+            question: "What is the main idea of the passage?",
+            options: [
+                "The UN ignored Palestine",
+                "Palestinian leaders always disagreed",
+                "The journey of the Palestinian cause toward recognition and peace",
+                "The 1948 war was the end of Palestine"
+            ],
+            answer: "The journey of the Palestinian cause toward recognition and peace",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 15,
+            question: "According to the passage, what helped bring more recognition to Palestine in recent years?",
+            options: ["Economic reforms", "Armed conflict", "Diplomatic efforts", "Natural resources"],
+            answer: "Diplomatic efforts",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 16,
+            question: "The Palestinian cause received strong international support immediately after 1948.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 17,
+            question: "Arafat's speech showed that the Palestinian cause could not be forgotten.",
+            options: ["True", "False"],
+            answer: "True",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 18,
+            question: "The United Nations General Assembly voted in 2012 to remove Palestine’s observer status.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 19,
+            question: "Mahmoud Abbas is mentioned in the passage as a representative of the current Palestinian leadership.",
+            options: ["True", "False"],
+            answer: "True",
+            image: "img/english2-01.png"
+        },
+        {
+            id: 20,
+            question: "The passage states that Arafat's speech was ignored by the international community.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "img/english2-01.png"
+        }
+    ],
+    2: [
+        {
+            id: 1,
+            question: "According to the text, your aim should be:",
+            options: ["very general", "something difficult", "something measurable", "something enjoyable"],
+            answer: "something measurable",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 2,
+            question: "What helps you keep going while learning something?",
+            options: ["Setting very high goals", "Worrying about success", "Enjoying the experience", "Measuring everything"],
+            answer: "Enjoying the experience",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 3,
+            question: "Spending too much time worrying about success will ....",
+            options: ["Help you learn faster", "Slow down your progress", "Improve your final score", "Make things easier"],
+            answer: "Slow down your progress",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 4,
+            question: "Telling others about your aim will make you ....",
+            options: ["Less likely to continue", "More likely to give up", "Want to continue", "Forget about your goal"],
+            answer: "Want to continue",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 5,
+            question: "Including other people in your goals will ....",
+            options: ["Make you feel bored", "Make things less fun", "Make you not want to let them down", "Make you lose interest"],
+            answer: "Make you not want to let them down",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 6,
+            question: "According to the text, if you do something with others, it will be...",
+            options: ["More difficult", "Less fun", "Easier to forget", "More fun"],
+            answer: "More fun",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 7,
+            question: "What does the text say about staying positive?",
+            options: ["It is always enough", "It may not be enough", "It guarantees success", "It is unnecessary"],
+            answer: "It may not be enough",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 8,
+            question: "What should you be ready for according to the text?",
+            options: ["Perfect success", "Many mistakes", "Things going wrong", "Immediate results"],
+            answer: "Things going wrong",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 9,
+            question: "Dividing your aim into smaller parts helps you...",
+            options: ["Get tired faster", "Reach your goal step by step", "Feel more pressure", "Forget the aim"],
+            answer: "Reach your goal step by step",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 10,
+            question: "According to paragraph 2, success should NOT be:",
+            options: ["Feared", "Overthought", "Enjoyed", "Divided"],
+            answer: "Overthought",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 11,
+            question: "What is necessary when things seem too hard?",
+            options: ["Ignoring the problem", "Having no plan", "Planning for difficulties", "Complaining about it"],
+            answer: "Planning for difficulties",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 12,
+            question: "Which advice is given about new experiences?",
+            options: ["Always think about success", "Focus only on the results", "Enjoy the experience itself", "Avoid learning new things"],
+            answer: "Enjoy the experience itself",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 13,
+            question: "Thinking generally about your aim is very helpful.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 14,
+            question: "Staying positive is always enough according to the text.",
+            options: ["True", "False"],
+            answer: "False",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 15,
+            question: "Having a plan is important.",
+            options: ["True", "False"],
+            answer: "True",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 16,
+            question: "The best title for paragraph 1 is ...",
+            options: ["Share it", "Enjoy yourself", "Think negative", "Set clear goals"],
+            answer: "Set clear goals",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 17,
+            question: "The best title for paragraph 2 is ...",
+            options: ["Share it", "Enjoy yourself", "Think negative", "Set clear goals"],
+            answer: "Enjoy yourself",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 18,
+            question: "The best title for paragraph 3 is ...",
+            options: ["Share it", "Step by step", "Think negative", "Set clear goals"],
+            answer: "Share it",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 19,
+            question: "The best title for paragraph 4 is ...",
+            options: ["Share it", "Enjoy yourself", "Think negative", "Set clear goals"],
+            answer: "Think negative",
+            image: "img/english2-02.png"
+        },
+        {
+            id: 20,
+            question: "The best title for paragraph 5 is ...",
+            options: ["Share it", "Step by step", "Think negative", "Set clear goals"],
+            answer: "Step by step",
+            image: "img/english2-02.png"
+        }
+    ],
+
+
+};
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // بيانات الاختبار
+            const subjectName = "اللغة الإنجليزية - جميع الفروع";
+            const units = [
+                { id: 1, name: " النموذج الأول" },
+                { id: 2, name: "النموذج الثاني" },
+                
+                
+            ];
+            
+            // تعيين اسم المادة
+            document.getElementById('subject-name').textContent = `اختبار ${subjectName}`;
+            
+            // إنشاء قائمة الوحدات
+            const unitsList = document.getElementById('units-list');
+            units.forEach(unit => {
+                const unitBtn = document.createElement('button');
+                unitBtn.className = 'unit-btn';
+                unitBtn.textContent = unit.name;
+                unitBtn.dataset.unitId = unit.id;
+                unitBtn.addEventListener('click', () => startQuiz(unit.id));
+                unitsList.appendChild(unitBtn);
+            });
+            
+            // متغيرات النظام
+            let currentUnit = null;
+            let currentPart = 1;
+            let totalParts = 0;
+            let userAnswers = {};
+            let timerInterval = null;
+            let startTime = null;
+            let timeLeft = localStorage.getItem('quiz_time_left') ? parseInt(localStorage.getItem('quiz_time_left')) : 3600; // 30 دقيقة بالثواني
+            
+            // عناصر واجهة المستخدم
+            const quizSection = document.getElementById('quiz-section');
+            const resultsSection = document.getElementById('results');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const printBtn = document.getElementById('print-btn');
+            
+            // بدء المؤقت
+            function startTimer() {
+                startTime = Date.now();
+                updateTimerDisplay();
+                timerInterval = setInterval(updateTimer, 1000);
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+            }
+            
+            // تحديث المؤقت
+            function updateTimer() {
+                timeLeft--;
+                updateTimerDisplay();
+                localStorage.setItem('quiz_time_left', timeLeft.toString());
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }
+            
+            // تحديث عرض المؤقت
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بدء الاختبار
+            function startQuiz(unitId) {
+                currentUnit = unitId;
+                userAnswers = {};
+                currentPart = 1;
+                
+                // إخفاء قائمة الوحدات
+                unitsList.style.display = 'none';
+                
+                // عرض قسم الاختبار
+                quizSection.style.display = 'block';
+                quizSection.classList.add('active');
+                
+                // إعداد الأسئلة
+                setupQuestions(unitId);
+                
+                // بدء المؤقت
+                if (!timerInterval) {
+                    startTimer();
+                }
+            }
+            
+            // إعداد الأسئلة
+            function setupQuestions(unitId) {
+                const questions = quizzes[unitId];
+                totalParts = Math.ceil(questions.length / 3);
+                
+                // مسح الأقسام السابقة
+                const quizSection = document.getElementById('quiz-section');
+                const existingParts = quizSection.querySelectorAll('.question-part');
+                existingParts.forEach(part => {
+                    if (!part.classList.contains('active')) {
+                        part.remove();
+                    }
+                });
+                
+                // إنشاء أقسام جديدة
+                for (let i = 1; i <= totalParts; i++) {
+                    if (i === 1) continue; // تخطي القسم الأول الموجود بالفعل
+                    
+                    const partDiv = document.createElement('div');
+                    partDiv.className = 'question-part';
+                    partDiv.dataset.part = i;
+                    quizSection.insertBefore(partDiv, document.querySelector('.navigation-btns'));
+                }
+                
+                // تعبئة الأسئلة في الأقسام
+                questions.forEach((question, index) => {
+                    const partNumber = Math.floor(index / 3) + 1;
+                    const partDiv = document.querySelector(`.question-part[data-part="${partNumber}"]`);
+                    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.dataset.questionId = question.id;
+                    
+                    const questionTitle = document.createElement('h3');
+                    questionTitle.textContent = `السؤال ${index + 1}: ${question.question}`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options';
+                    
+                    // إضافة الصورة إذا كانت موجودة
+                    if (question.image) {
+                        const imageNote = document.createElement('div');
+                        imageNote.className = 'image-note';
+                        imageNote.textContent = 'انظر إلى الصورة للإجابة:';
+                        
+                        const image = document.createElement('img');
+                        image.className = 'question-image';
+                        image.src = question.image;
+                        image.alt = 'صورة السؤال';
+                        
+                        questionDiv.appendChild(imageNote);
+                        questionDiv.appendChild(image);
+                    }
+                    
+                    question.options.forEach((option, optIndex) => {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'option';
+                        optionDiv.textContent = option;
+                        optionDiv.dataset.option = option;
+                        
+                        optionDiv.addEventListener('click', function() {
+                            // إزالة التحديد من جميع الخيارات لهذا السؤال
+                            const allOptions = this.parentElement.querySelectorAll('.option');
+                            allOptions.forEach(opt => opt.classList.remove('selected'));
+                            
+                            // تحديد الخيار الحالي
+                            this.classList.add('selected');
+                            
+                            // حفظ الإجابة
+                            userAnswers[question.id] = option;
+                        });
+                        
+                        optionsDiv.appendChild(optionDiv);
+                    });
+                    
+                    questionDiv.appendChild(questionTitle);
+                    questionDiv.appendChild(optionsDiv);
+                    partDiv.appendChild(questionDiv);
+                });
+                
+                // عرض القسم الأول
+                showPart(1);
+            }
+            
+            // عرض قسم معين
+            function showPart(partNumber) {
+                // إخفاء جميع الأقسام
+                document.querySelectorAll('.question-part').forEach(part => {
+                    part.classList.remove('active');
+                });
+                
+                // عرض القسم المطلوب
+                document.querySelector(`.question-part[data-part="${partNumber}"]`).classList.add('active');
+                
+                // تحديث أزرار التنقل
+                prevBtn.disabled = partNumber === 1;
+                nextBtn.disabled = partNumber === totalParts;
+                
+                // تحديث الإجابات المحددة مسبقاً
+                const currentPartQuestions = document.querySelectorAll(`.question-part[data-part="${partNumber}"] .question`);
+                currentPartQuestions.forEach(questionDiv => {
+                    const questionId = parseInt(questionDiv.dataset.questionId);
+                    if (userAnswers[questionId]) {
+                        const options = questionDiv.querySelectorAll('.option');
+                        options.forEach(option => {
+                            if (option.dataset.option === userAnswers[questionId]) {
+                                option.classList.add('selected');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // تقديم الاختبار
+            function submitQuiz() {
+                clearInterval(timerInterval);
+                localStorage.removeItem('quiz_time_left');
+                
+                // إخفاء قسم الاختبار
+                quizSection.style.display = 'none';
+                
+                // عرض النتائج
+                showResults();
+            }
+            
+            // عرض النتائج
+            function showResults() {
+                const questions = quizzes[currentUnit];
+                let correctCount = 0;
+                const resultsContent = document.getElementById('results-content');
+                resultsContent.innerHTML = '';
+                
+                // حساب النتائج
+                questions.forEach(question => {
+                    const isCorrect = userAnswers[question.id] === question.answer;
+                    if (isCorrect) correctCount++;
+                    
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const resultQuestion = document.createElement('div');
+                    resultQuestion.className = 'result-question';
+                    resultQuestion.textContent = question.question;
+                    
+                    const userAnswerDiv = document.createElement('div');
+                    userAnswerDiv.className = `user-answer ${isCorrect ? 'correct' : 'wrong'}`;
+                    userAnswerDiv.textContent = `إجابتك: ${userAnswers[question.id] || 'لم يتم الإجابة'}`;
+                    
+                    const correctAnswerDiv = document.createElement('div');
+                    correctAnswerDiv.className = 'correct-answer';
+                    correctAnswerDiv.textContent = `الإجابة الصحيحة: ${question.answer}`;
+                    
+                    // إضافة الصورة إذا كانت موجودة في النتائج
+                    if (question.image) {
+                        const image = document.createElement('img');
+                        image.className = 'question-image';
+                        image.src = question.image;
+                        image.alt = 'صورة السؤال';
+                        image.style.maxWidth = '300px';
+                        resultItem.appendChild(image);
+                    }
+                    
+                    resultItem.appendChild(resultQuestion);
+                    resultItem.appendChild(userAnswerDiv);
+                    resultItem.appendChild(correctAnswerDiv);
+                    resultsContent.appendChild(resultItem);
+                });
+                
+                // عرض النتيجة النهائية
+                const scorePercentage = Math.round((correctCount / questions.length) * 100);
+                document.getElementById('score-display').textContent = `علامتك: ${correctCount} من ${questions.length} (${scorePercentage}%)`;
+                
+                // حساب الوقت المستغرق
+                const timeSpent = 3600 - timeLeft;
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                document.getElementById('time-taken').textContent = `الوقت المستغرق: ${minutes} دقائق و ${seconds} ثواني`;
+                
+                // عرض قسم النتائج
+                resultsSection.style.display = 'block';
+                saveQuizResult(correctCount, questions.length, `${minutes} دقائق و ${seconds} ثواني`);
+
+            }
+            
+            // أحداث الأزرار
+            prevBtn.addEventListener('click', function() {
+                if (currentPart > 1) {
+                    currentPart--;
+                    showPart(currentPart);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentPart < totalParts) {
+                    currentPart++;
+                    showPart(currentPart);
+                }
+            });
+            
+            submitBtn.addEventListener('click', submitQuiz);
+            
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // استعادة المؤقت إذا كان هناك اختبار جاري
+            if (localStorage.getItem('quiz_time_left')) {
+                updateTimerDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
